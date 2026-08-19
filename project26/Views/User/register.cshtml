@@ -1,0 +1,158 @@
+@using project26.Models
+@model User
+
+@{
+    ViewData["Title"] = "Register - E-World";
+}
+
+<div class="auth-wrapper">
+    <div class="site-card" style="width:100%;max-width:720px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        
+        <!-- Header -->
+        <div class="site-heading">
+            <div style="width: 60px; height: 60px; background: #fff8f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: var(--accent-pink);">
+                <i data-lucide="user-plus" style="width: 30px; height: 30px;"></i>
+            </div>
+            <h2>Create Account</h2>
+            <p>Join millions of shoppers on E-World</p>
+        </div>
+
+        <form asp-action="register" method="post" enctype="multipart/form-data" id="registerForm" novalidate>
+            
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger d-flex align-items-center gap-2" style="background: #fdf2f2; border: 1px solid #f8d7da; color: #dc3545; border-radius: 4px; font-size: 0.85rem; padding: 12px 16px; margin-bottom: 20px;">
+                    <i data-lucide="alert-circle" style="width: 18px; height: 18px;"></i>
+                    @ViewBag.Error
+                </div>
+            }
+
+            <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:16px;"></div>
+
+            <div class="row g-4">
+                
+                <!-- Left Column: Image Preview -->
+                <div class="col-lg-4 d-flex flex-column align-items-center pt-2">
+                    <label class="site-label w-100 text-center mb-3">Profile Photo</label>
+                    <div class="image-upload-wrapper">
+                        <div class="image-preview" id="imagePreview" style="background: #f8f8f8;">
+                            <i data-lucide="camera" style="width: 40px; height: 40px; color: var(--text-muted);"></i>
+                        </div>
+                        <label for="imageInput" class="upload-badge">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                        </label>
+                        <input type="file" id="imageInput" name="image" accept="image/*" class="d-none" onchange="previewImage(this)" />
+                    </div>
+                    <p class="text-muted mt-3" style="font-size: 0.7rem; text-align: center;">JPG, PNG or WebP. Max 5MB.</p>
+                </div>
+
+                <!-- Right Column: Form Fields -->
+                <div class="col-lg-8">
+                    <div class="row g-3">
+                        <!-- Username -->
+                        <div class="col-md-12">
+                            <label class="site-label">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-lucide="user" style="width:16px;height:16px;"></i>
+                                </span>
+                                <input asp-for="uname" class="form-control" placeholder="Enter your full name" required />
+                            </div>
+                            <span asp-validation-for="uname" class="text-danger"></span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-12">
+                            <label class="site-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-lucide="mail" style="width:16px;height:16px;"></i>
+                                </span>
+                                <input asp-for="uemail" type="email" class="form-control" placeholder="name@example.com" required />
+                            </div>
+                            <span asp-validation-for="uemail" class="text-danger"></span>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="col-md-12">
+                            <label class="site-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-lucide="phone" style="width:16px;height:16px;"></i>
+                                </span>
+                                <input asp-for="uphone" class="form-control" placeholder="e.g. 03XXXXXXXXX" required />
+                            </div>
+                            <span asp-validation-for="uphone" class="text-danger"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="col-md-6">
+                            <label class="site-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-lucide="lock" style="width:16px;height:16px;"></i>
+                                </span>
+                                <input asp-for="upassword" type="password" class="form-control" placeholder="••••••••" required />
+                            </div>
+                            <span asp-validation-for="upassword" class="text-danger"></span>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="col-md-6">
+                            <label class="site-label">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-lucide="shield-check" style="width:16px;height:16px;"></i>
+                                </span>
+                                <input asp-for="ucpass" type="password" class="form-control" placeholder="••••••••" required />
+                            </div>
+                            <span asp-validation-for="ucpass" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Submit -->
+            <div style="margin-top:35px;">
+                <button type="submit" class="btn-site btn-site-primary py-3">
+                    CREATE ACCOUNT
+                </button>
+            </div>
+
+            <div class="site-divider"></div>
+
+            <p style="text-align:center;font-size:0.9rem;color:var(--text-secondary);">
+                Already have an account?
+                <a asp-controller="User" asp-action="login"
+                   style="color: var(--accent-pink); font-weight:700;">
+                    Sign in here
+                </a>
+            </p>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;" />`;
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.innerHTML = `<i data-lucide="camera" style="width: 40px; height: 40px; color: var(--text-muted);"></i>`;
+                lucide.createIcons();
+            }
+        }
+    </script>
+}

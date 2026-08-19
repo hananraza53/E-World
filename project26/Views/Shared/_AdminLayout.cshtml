@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Mobile Admin Header -->
+    <header class="admin-mobile-header">
+        <button class="admin-menu-btn" onclick="toggleAdminSidebar(true)" aria-label="Open Sidebar">
+            <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
+        </button>
+        <div class="admin-mobile-brand">
+            <i data-lucide="shopping-bag" style="width: 20px; height: 20px; color: var(--accent-pink);"></i>
+            <span>E-World Admin</span>
+        </div>
+        <div style="width: 34px;"></div> <!-- visual balance spacer -->
+    </header>
+
+    <!-- Sidebar Overlay Backdrop -->
+    <div id="adminSidebarOverlay" class="admin-sidebar-overlay" onclick="toggleAdminSidebar(false)"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <i data-lucide="shopping-bag" style="width:24px;height:24px;color:var(--accent-pink);"></i>
+            <span class="logo-text" style="color:var(--accent-pink);">E-World Admin</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/Admin/Index" class="nav-item active" id="nav-overview">
+                <i data-lucide="home" class="nav-icon"></i>
+                <span>Overview</span>
+            </a>
+            <a href="/Admin/Products" class="nav-item" id="nav-products">
+                <i data-lucide="package" class="nav-icon"></i>
+                <span>Products</span>
+            </a>
+            <a href="/Categories" class="nav-item" id="nav-categories">
+                <i data-lucide="layers" class="nav-icon"></i>
+                <span>Categories</span>
+            </a>
+            <a href="/Orders" class="nav-item" id="nav-orders">
+                <i data-lucide="shopping-bag" class="nav-icon"></i>
+                <span>Orders</span>
+            </a>
+            <a href="/Banners" class="nav-item" id="nav-banners">
+                <i data-lucide="image" class="nav-icon"></i>
+                <span>Banners</span>
+            </a>
+            <a href="/Admin/Coupons" class="nav-item" id="nav-coupons">
+                <i data-lucide="ticket" class="nav-icon"></i>
+                <span>Coupons</span>
+            </a>
+            <a href="/Users" class="nav-item" id="nav-customers">
+                <i data-lucide="users" class="nav-icon"></i>
+                <span>Users</span>
+            </a>
+            <a href="/Admin/Chats" class="nav-item" id="nav-livechats">
+                <i data-lucide="message-square" class="nav-icon"></i>
+                <span>Live Chats</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-wallet">
+                <i data-lucide="wallet" class="nav-icon"></i>
+                <span>Wallet</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-settings">
+                <i data-lucide="settings" class="nav-icon"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                @if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(User.FindFirst("ProfileImage")?.Value))
+                {
+                    <img src="@User.FindFirst("ProfileImage")?.Value" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+                }
+                else
+                {
+                    @(User.Identity.Name?.Substring(0, 1).ToUpper() ?? "A")
+                }
+            </div>
+            <div class="user-info">
+                <div class="user-name">@User.Identity.Name</div>
+                <div class="user-role">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</div>
+            </div>
+            <a asp-controller="User" asp-action="Logout" style="color: inherit; display: flex; align-items: center;" title="Logout">
+                <i data-lucide="log-out" class="user-chevron"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <main class="main-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function toggleAdminSidebar(open) {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('adminSidebarOverlay');
+            if (sidebar && overlay) {
+                if (open) {
+                    sidebar.classList.add('open');
+                    overlay.classList.add('open');
+                } else {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('open');
+                }
+            }
+        }
+
+        // Highlight active sidebar link
+        const currentPath = window.location.pathname.toLowerCase();
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            const href = item.getAttribute('href').toLowerCase();
+            if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
+                item.classList.add('active');
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

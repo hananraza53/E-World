@@ -1,0 +1,180 @@
+@model project26.Models.Product
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Add New Product";
+}
+
+<div class="page-header">
+    <div class="page-title-block">
+        <h1 class="page-title">Add New Product</h1>
+        <p class="page-subtitle">Create a new entry in your product catalog with detailed specifications.</p>
+    </div>
+    <a asp-action="Index" class="btn-ghost" style="text-decoration:none; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="arrow-left" style="width:16px;height:16px;"></i>
+        Back to List
+    </a>
+</div>
+
+<div class="panel animate-fade-in" style="max-width: 900px; margin: 0 auto; padding: 32px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px;">
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="animate-slide-up">
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 20px;"></div>
+
+        <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+            
+            <!-- Basic Info -->
+            <div class="form-group">
+                <label class="form-label">Product Name</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i data-lucide="package" style="width:16px;height:16px;"></i></span>
+                    <input asp-for="pname" class="form-input" placeholder="e.g. Ultra Hydrating Face Cream" required />
+                </div>
+                <span asp-validation-for="pname" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Product Type</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i data-lucide="layout" style="width:16px;height:16px;"></i></span>
+                    <input asp-for="producttype" class="form-input" placeholder="e.g. Premium, Standard" />
+                </div>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label">Description</label>
+                <textarea asp-for="pdes" class="form-input form-textarea" placeholder="Detailed product description..." rows="3"></textarea>
+                <span asp-validation-for="pdes" class="text-danger"></span>
+            </div>
+
+            <!-- Pricing & Inventory -->
+            <div class="form-group">
+                <label class="form-label">Original Price (Rs.)</label>
+                <div class="input-group">
+                    <span class="input-group-text">Rs.</span>
+                    <input asp-for="pprice" type="number" class="form-input" placeholder="0.00" step="0.01" required />
+                </div>
+                <span asp-validation-for="pprice" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Quantity in Stock</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i data-lucide="layers" style="width:16px;height:16px;"></i></span>
+                    <input asp-for="pqty" type="number" class="form-input" placeholder="0" required />
+                </div>
+                <span asp-validation-for="pqty" class="text-danger"></span>
+            </div>
+
+            <!-- Category & Discount -->
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i data-lucide="tag" style="width:16px;height:16px;"></i></span>
+                    <select asp-for="Categoryid" class="form-input" required>
+                        <option value="">Select Category</option>
+                        @if (ViewBag.Categories != null)
+                        {
+                            foreach (var cat in (IEnumerable<project26.Models.Category>)ViewBag.Categories)
+                            {
+                                <option value="@cat.cid">@cat.cname</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <span asp-validation-for="Categoryid" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Discount (%)</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i data-lucide="percent" style="width:16px;height:16px;"></i></span>
+                    <select asp-for="pdis" class="form-input">
+                        @for (int i = 0; i <= 100; i++)
+                        {
+                            <option value="@i">@i%</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Custom Dropdowns -->
+            <div class="form-group">
+                <label class="form-label">Size</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i data-lucide="maximize" style="width:16px;height:16px;"></i></span>
+                    <select name="selectedSize" class="form-input">
+                        <option value="">Select Size</option>
+                        <option value="S">Small (S)</option>
+                        <option value="M">Medium (M)</option>
+                        <option value="L">Large (L)</option>
+                        <option value="XL">Extra Large (XL)</option>
+                        <option value="XXL">Double Extra Large (XXL)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i data-lucide="palette" style="width:16px;height:16px;"></i></span>
+                    <select name="selectedColor" class="form-input">
+                        <option value="">Select Color</option>
+                        <option value="Red">Red</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Green">Green</option>
+                        <option value="Black">Black</option>
+                        <option value="White">White</option>
+                        <option value="Grey">Grey</option>
+                        <option value="Yellow">Yellow</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label">Product Image</label>
+                <div class="upload-area" id="upload-area" style="border: 2px dashed #e2e2e2; border-radius: 4px; padding: 40px; text-align: center; cursor: pointer; transition: 0.3s; background: #f5f5f5; position: relative; overflow: hidden;">
+                    <input type="file" name="imageFile" id="imageFile" style="display: none;" accept="image/*" onchange="previewImage(event)" />
+                    <div id="upload-placeholder">
+                        <i data-lucide="upload-cloud" style="width:48px;height:48px;color:var(--text-muted);margin-bottom:12px;"></i>
+                        <p style="color:var(--text-muted);font-size:0.9rem;">Click or drag to upload product image</p>
+                    </div>
+                    <img id="image-preview" style="display: none; max-width: 100%; max-height: 300px; border-radius: 8px; margin: 0 auto;" />
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-actions" style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #e2e2e2; padding-top: 24px;">
+            <a asp-action="Index" class="btn-ghost">Cancel</a>
+            <button type="submit" class="btn-primary" style="padding: 12px 32px; font-weight: 600;">
+                <i data-lucide="check" style="width:18px;height:18px;"></i>
+                Create Product
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('upload-area').onclick = () => document.getElementById('imageFile').click();
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const preview = document.getElementById('image-preview');
+                const placeholder = document.getElementById('upload-placeholder');
+                preview.src = reader.result;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
+            if (event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+}

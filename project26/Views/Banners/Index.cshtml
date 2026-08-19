@@ -1,0 +1,497 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Banners";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-title-block">
+        <h1 class="page-title">Banners</h1>
+        <p class="page-subtitle">Manage promotional banners — add, toggle or remove them.</p>
+    </div>
+    <button class="btn-primary" onclick="openBannerModal('add')">
+        <i data-lucide="image-plus" style="width:15px;height:15px;"></i>
+        Add Banner
+    </button>
+</div>
+
+<!-- Stats Strip -->
+<div class="crud-stat-strip">
+    <div class="crud-stat">
+        <span class="crud-stat-val" id="stat-ban-total">4</span>
+        <span class="crud-stat-label">Total</span>
+    </div>
+    <div class="crud-stat">
+        <span class="crud-stat-val" style="color:#10b981;" id="stat-ban-active">3</span>
+        <span class="crud-stat-label">Active</span>
+    </div>
+    <div class="crud-stat">
+        <span class="crud-stat-val" style="color:#f59e0b;" id="stat-ban-inactive">1</span>
+        <span class="crud-stat-label">Inactive</span>
+    </div>
+</div>
+
+<!-- Search + Filter + Sort -->
+<div class="crud-toolbar">
+    <div class="header-search" style="flex:1; max-width:360px;">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" placeholder="Search banners..." class="search-input"
+               id="banner-search" oninput="filterBanners()" />
+    </div>
+    <select class="time-select" id="filter-ban-status" onchange="filterBanners()">
+        <option value="">All Status</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+    </select>
+    <select class="time-select" id="ban-sort" onchange="filterBanners()">
+        <option value="newest">Sort: Newest</option>
+        <option value="oldest">Sort: Oldest</option>
+        <option value="az">Sort: A → Z</option>
+        <option value="za">Sort: Z → A</option>
+    </select>
+</div>
+
+<!-- Banners Table -->
+<div class="panel" style="padding:0; overflow:hidden;">
+    <div class="table-wrap">
+        <table class="orders-table" id="banners-table" style="table-layout:fixed;">
+            <colgroup>
+                <col style="width:60px" />
+                <col style="width:110px" />
+                <col style="width:220px" />
+                <col style="width:auto" />
+                <col style="width:110px" />
+                <col style="width:120px" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>BID</th>
+                    <th>IMAGE</th>
+                    <th>BTITLE</th>
+                    <th>BDESCRIPTION</th>
+                    <th>ISACTIVE</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody id="banners-tbody">
+                <!-- Rows injected by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── ADD / EDIT MODAL ───────────────────────────────── -->
+<div class="modal-overlay" id="banner-modal" onclick="closeBannerModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:560px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="banner-modal-title">Add Banner</h3>
+            <button class="modal-close" onclick="closeBannerModal(null)">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <form id="banner-form" onsubmit="saveBanner(event)">
+            <input type="hidden" id="ban-edit-id" value="" />
+            <div class="form-grid">
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">BTitle</label>
+                    <input type="text" class="form-input" id="ban-btitle"
+                           placeholder="e.g. Summer Sale 2025" required />
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">BDescription</label>
+                    <textarea class="form-input form-textarea" id="ban-bdescription"
+                              placeholder="Short banner description..." required></textarea>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">ImageUrl</label>
+                    <input type="file" id="ban-file-input" accept="image/*"
+                           style="display:none;" onchange="handleBannerFile(this)" />
+                    <div class="file-upload-area" id="ban-upload-area"
+                         onclick="document.getElementById('ban-file-input').click()"
+                         ondragover="banDragOver(event)" ondragleave="banDragLeave(event)" ondrop="banDrop(event)">
+                        <div id="ban-upload-placeholder">
+                            <i data-lucide="upload-cloud" style="width:36px;height:36px;color:var(--accent-purple);margin-bottom:10px;"></i>
+                            <p style="font-size:0.85rem;font-weight:600;color:var(--text-primary);margin-bottom:4px;">
+                                Click to upload or drag & drop
+                            </p>
+                            <p style="font-size:0.73rem;color:var(--text-muted);">
+                                PNG, JPG, WEBP up to 5MB
+                            </p>
+                        </div>
+                        <div id="ban-img-preview-wrap" style="display:none;width:100%;position:relative;">
+                            <img id="ban-img-preview" src="" alt="preview"
+                                 style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;" />
+                            <button type="button" class="ban-img-remove" onclick="removeBannerImg(event)"
+                                    title="Remove image">
+                                <i data-lucide="x" style="width:14px;height:14px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="ban-imageurl" value="" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">IsActive</label>
+                    <select class="form-input" id="ban-isactive">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" onclick="closeBannerModal(null)">Cancel</button>
+                <button type="submit" class="btn-primary" id="ban-save-btn">
+                    <i data-lucide="image-plus" style="width:14px;height:14px;"></i>
+                    Save Banner
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ───────────────────────────── -->
+<div class="modal-overlay" id="ban-delete-modal" onclick="closeBannerDeleteModal(event)">
+    <div class="modal-box modal-sm" onclick="event.stopPropagation()">
+        <div class="delete-icon-wrap">
+            <i data-lucide="trash-2" style="width:30px;height:30px;color:#ec4899;"></i>
+        </div>
+        <h3 class="modal-title" style="text-align:center;margin-bottom:8px;">Delete Banner?</h3>
+        <p style="text-align:center;font-size:0.83rem;color:var(--text-secondary);margin-bottom:6px;">
+            You are about to delete:
+        </p>
+        <p id="ban-del-name"
+           style="text-align:center;font-size:0.9rem;font-weight:700;color:#ec4899;margin-bottom:20px;"></p>
+        <p style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-bottom:24px;">
+            This action cannot be undone.
+        </p>
+        <input type="hidden" id="ban-del-id" />
+        <div class="modal-footer" style="justify-content:center;">
+            <button class="btn-ghost" onclick="closeBannerDeleteModal(null)">Cancel</button>
+            <button class="btn-danger" onclick="confirmBannerDelete()">
+                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── IMAGE PREVIEW MODAL ─────────────────────────────── -->
+<div class="modal-overlay" id="img-preview-modal"
+     onclick="document.getElementById('img-preview-modal').classList.remove('open')"
+     style="cursor:zoom-out;">
+    <div style="max-width:720px;width:92%;position:relative;" onclick="event.stopPropagation()">
+        <button onclick="document.getElementById('img-preview-modal').classList.remove('open')"
+                style="position:absolute;top:-14px;right:-14px;background:#252831;border:1px solid rgba(255,255,255,0.12);
+                       color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;
+                       display:flex;align-items:center;justify-content:center;z-index:10;">&times;</button>
+        <img id="preview-img-src" src="" alt=""
+             style="width:100%;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.6);" />
+        <p id="preview-img-title"
+           style="text-align:center;margin-top:12px;font-weight:600;color:#fff;font-size:0.9rem;"></p>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let banners = [];
+
+    // ── Fetch Banners from API ───────────────────────────
+    async function loadBanners() {
+        try {
+            const response = await fetch('/Banners/GetBanners');
+            if (response.ok) {
+                banners = await response.json();
+                renderBanners(banners);
+            } else {
+                showToast('Failed to load banners.', 'error');
+            }
+        } catch (error) {
+            showToast('Error loading banners.', 'error');
+        }
+    }
+
+    // ── Render Table ─────────────────────────────────────
+    function renderBanners(data) {
+        const tbody = document.getElementById('banners-tbody');
+        if (!data.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:44px;color:var(--text-muted);">No banners found.</td></tr>`;
+            updateBanStats();
+            return;
+        }
+        tbody.innerHTML = data.map(b => `
+            <tr data-btitle="${b.btitle.toLowerCase()}" data-isactive="${b.isActive}">
+                <td class="order-id">#${b.bid}</td>
+                <td>
+                    ${b.imageUrl
+                        ? `<img src="${b.imageUrl}" alt="${b.btitle}" class="banner-thumb"
+                               onclick="openImgPreview('${b.imageUrl}','${b.btitle.replace(/'/g,"\\\'")}')"/>`
+                        : `<div class="banner-no-img"><i data-lucide="image-off" style="width:18px;height:18px;"></i></div>`
+                    }
+                </td>
+                <td style="font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.btitle}</td>
+                <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    <span style="font-size:0.8rem;color:var(--text-secondary);">
+                        ${b.bdescription ? (b.bdescription.length > 55 ? b.bdescription.substring(0,55)+'...' : b.bdescription) : '—'}
+                    </span>
+                </td>
+                <td style="white-space:nowrap;">
+                    <span class="badge ${b.isActive ? 'badge-completed' : 'badge-pending'}">
+                        ${b.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="action-btn ${b.isActive ? 'action-toggle-off' : 'action-toggle-on'}"
+                                onclick="toggleBannerStatus(${b.bid})"
+                                title="${b.isActive ? 'Deactivate' : 'Activate'}">
+                            <i data-lucide="${b.isActive ? 'eye-off' : 'eye'}" style="width:14px;height:14px;"></i>
+                        </button>
+                        <button class="action-btn action-edit" onclick="openBannerModal('edit', ${b.bid})" title="Edit">
+                            <i data-lucide="pencil" style="width:14px;height:14px;"></i>
+                        </button>
+                        <button class="action-btn action-delete" onclick="openBannerDeleteModal(${b.bid}, '${b.btitle.replace(/'/g,"\\'")}')">
+                            <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        lucide.createIcons();
+        updateBanStats();
+    }
+
+    function updateBanStats() {
+        document.getElementById('stat-ban-total').textContent    = banners.length;
+        document.getElementById('stat-ban-active').textContent   = banners.filter(b => b.isActive === true).length;
+        document.getElementById('stat-ban-inactive').textContent = banners.filter(b => b.isActive === false).length;
+    }
+
+    // ── Filter + Sort ────────────────────────────────────
+    function filterBanners() {
+        const q    = document.getElementById('banner-search').value.toLowerCase();
+        const st   = document.getElementById('filter-ban-status').value;
+        const sort = document.getElementById('ban-sort').value;
+        let filtered = banners.filter(b =>
+            (!q  || b.btitle.toLowerCase().includes(q)) &&
+            (st === '' || String(b.isActive) === st)
+        );
+        if (sort === 'az')      filtered.sort((a, b) => a.btitle.localeCompare(b.btitle));
+        if (sort === 'za')      filtered.sort((a, b) => b.btitle.localeCompare(a.btitle));
+        if (sort === 'newest')  filtered.sort((a, b) => b.bid - a.bid);
+        if (sort === 'oldest')  filtered.sort((a, b) => a.bid - b.bid);
+        renderBanners(filtered);
+    }
+
+    // ── Add / Edit Modal ─────────────────────────────────
+    function openBannerModal(mode, bid) {
+        document.getElementById('banner-modal').classList.add('open');
+        resetUploadArea();
+        if (mode === 'add') {
+            document.getElementById('banner-modal-title').textContent = 'Add Banner';
+            document.getElementById('ban-save-btn').innerHTML         = '<i data-lucide="image-plus" style="width:14px;height:14px;"></i> Save Banner';
+            document.getElementById('banner-form').reset();
+            document.getElementById('ban-edit-id').value  = '0';
+            document.getElementById('ban-imageurl').value = '';
+        } else {
+            const b = banners.find(x => x.bid === bid);
+            document.getElementById('banner-modal-title').textContent = 'Edit Banner';
+            document.getElementById('ban-save-btn').innerHTML         = '<i data-lucide="save" style="width:14px;height:14px;"></i> Update Banner';
+            document.getElementById('ban-edit-id').value      = b.bid;
+            document.getElementById('ban-btitle').value       = b.btitle;
+            document.getElementById('ban-bdescription').value = b.bdescription;
+            document.getElementById('ban-imageurl').value     = b.imageUrl || '';
+            document.getElementById('ban-isactive').value     = String(b.isActive);
+            if (b.imageUrl) showBannerPreview(b.imageUrl);
+        }
+        lucide.createIcons();
+    }
+
+    function closeBannerModal(e) {
+        if (!e || e.target === document.getElementById('banner-modal'))
+            document.getElementById('banner-modal').classList.remove('open');
+    }
+
+    // ── File Upload Handlers ─────────────────────────────
+    function handleBannerFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showToast('Please select an image file!', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image must be under 5MB!', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // Keep URL empty since we'll upload the actual file
+            document.getElementById('ban-imageurl').value = '';
+            showBannerPreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function banDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('ban-upload-area').classList.add('drag-over');
+    }
+
+    function banDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('ban-upload-area').classList.remove('drag-over');
+    }
+
+    function banDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('ban-upload-area').classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const input = document.getElementById('ban-file-input');
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            handleBannerFile(input);
+        }
+    }
+
+    function showBannerPreview(src) {
+        document.getElementById('ban-upload-placeholder').style.display = 'none';
+        const wrap = document.getElementById('ban-img-preview-wrap');
+        const img  = document.getElementById('ban-img-preview');
+        img.src = src;
+        wrap.style.display = 'block';
+        lucide.createIcons();
+    }
+
+    function resetUploadArea() {
+        document.getElementById('ban-upload-placeholder').style.display = '';
+        document.getElementById('ban-img-preview-wrap').style.display   = 'none';
+        document.getElementById('ban-img-preview').src                  = '';
+        document.getElementById('ban-file-input').value                 = '';
+        document.getElementById('ban-upload-area').classList.remove('drag-over');
+    }
+
+    function removeBannerImg(e) {
+        e.stopPropagation();
+        document.getElementById('ban-imageurl').value = '';
+        document.getElementById('ban-file-input').value = '';
+        resetUploadArea();
+    }
+
+    async function saveBanner(e) {
+        e.preventDefault();
+        const btn = document.getElementById('ban-save-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader" class="spin" style="width:14px;height:14px;"></i> Saving...';
+        lucide.createIcons();
+
+        const formData = new FormData();
+        formData.append("bid", document.getElementById('ban-edit-id').value);
+        formData.append("btitle", document.getElementById('ban-btitle').value.trim());
+        formData.append("bdescription", document.getElementById('ban-bdescription').value.trim());
+        formData.append("IsActive", document.getElementById('ban-isactive').value);
+        
+        // Append image if we are not editing or replacing the image
+        const fileInput = document.getElementById('ban-file-input');
+        if (fileInput.files.length > 0) {
+            formData.append("image", fileInput.files[0]);
+        } else {
+            // Keep existing URL if editing and not changed
+            formData.append("ImageUrl", document.getElementById('ban-imageurl').value);
+        }
+
+        try {
+            const response = await fetch('/Banners/Save', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (result.success) {
+                closeBannerModal(null);
+                await loadBanners();
+                showToast(document.getElementById('ban-edit-id').value === '0' ? 'Banner added!' : 'Banner updated!');
+            } else {
+                showToast(result.message || 'Error saving banner.', 'error');
+            }
+        } catch (error) {
+            showToast('Network error.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px;"></i> Save Banner';
+            lucide.createIcons();
+        }
+    }
+
+    // ── Toggle Status ────────────────────────────────────
+    async function toggleBannerStatus(bid) {
+        try {
+            const response = await fetch(`/Banners/ToggleStatus/${bid}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                await loadBanners();
+                showToast(`Banner set to ${result.isActive ? 'Active' : 'Inactive'}!`);
+            } else {
+                showToast(result.message || 'Error toggling status.', 'error');
+            }
+        } catch (error) {
+            showToast('Network error.', 'error');
+        }
+    }
+
+    // ── Delete Modal ─────────────────────────────────────
+    function openBannerDeleteModal(bid, name) {
+        document.getElementById('ban-del-id').value             = bid;
+        document.getElementById('ban-del-name').textContent     = name;
+        document.getElementById('ban-delete-modal').classList.add('open');
+        lucide.createIcons();
+    }
+
+    function closeBannerDeleteModal(e) {
+        if (!e || e.target === document.getElementById('ban-delete-modal'))
+            document.getElementById('ban-delete-modal').classList.remove('open');
+    }
+
+    async function confirmBannerDelete() {
+        const bid = parseInt(document.getElementById('ban-del-id').value);
+        try {
+            const response = await fetch(`/Banners/Delete/${bid}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                closeBannerDeleteModal(null);
+                await loadBanners();
+                showToast('Banner deleted!', 'error');
+            } else {
+                showToast(result.message || 'Error deleting banner.', 'error');
+            }
+        } catch (error) {
+            showToast('Network error.', 'error');
+        }
+    }
+
+    // ── Image Preview ─────────────────────────────────────
+    function openImgPreview(url, title) {
+        document.getElementById('preview-img-src').src           = url;
+        document.getElementById('preview-img-title').textContent = title;
+        document.getElementById('img-preview-modal').classList.add('open');
+    }
+
+    // ── Toast ─────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const t = document.createElement('div');
+        t.className   = 'toast-msg ' + type;
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.classList.add('show'), 10);
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 2600);
+    }
+
+    // ── Init ─────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        loadBanners();
+        lucide.createIcons();
+    });
+</script>
+}

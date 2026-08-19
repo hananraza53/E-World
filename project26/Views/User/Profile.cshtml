@@ -1,0 +1,262 @@
+@model project26.Models.User
+@{
+    ViewData["Title"] = "My Profile - E-World";
+}
+
+<style>
+    .profile-container {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 30px;
+        align-items: start;
+    }
+
+    /* ── Sidebar ────────────────────────────────────────── */
+    .profile-sidebar {
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .sidebar-user {
+        text-align: center;
+        padding-bottom: 25px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 20px;
+    }
+
+    .profile-pic {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        border: 3px solid #fff8f5;
+        box-shadow: 0 0 0 1px var(--accent-pink);
+    }
+
+    .profile-pic img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-pic .initial {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: 800;
+        color: var(--accent-pink);
+    }
+
+    .sidebar-user h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 5px;
+    }
+
+    .sidebar-user span {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 15px;
+        border-radius: 4px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+        text-decoration: none !important;
+    }
+
+    .nav-item i {
+        width: 18px;
+    }
+
+    .nav-item:hover {
+        background: #fff8f5;
+        color: var(--accent-pink);
+    }
+
+    .nav-item.active {
+        background: var(--accent-pink);
+        color: #fff;
+    }
+
+    /* ── Main Content ───────────────────────────────────── */
+    .profile-content {
+        background: #fff;
+        border-radius: 8px;
+        padding: 40px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .profile-content h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: var(--text-primary);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .info-group {
+        margin-bottom: 10px;
+    }
+
+    .info-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .info-group .value {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        padding: 12px;
+        background: #fdfdfd;
+        border: 1px solid #f0f0f0;
+        border-radius: 4px;
+    }
+
+    .badge-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        background: #ecfdf5;
+        color: #10b981;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .action-row {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 15px;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-layout">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+            <div class="sidebar-user">
+                <div class="profile-pic">
+                    @if (!string.IsNullOrEmpty(Model?.Image))
+                    {
+                        <img src="@Model.Image" alt="@Model.uname">
+                    }
+                    else
+                    {
+                        <div class="initial">@(Model?.uname?.Substring(0, 1).ToUpper() ?? "U")</div>
+                    }
+                </div>
+                <h3>@Model?.uname</h3>
+                <span>@Model?.urole User</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i data-lucide="user"></i> My Profile</a>
+                <a asp-controller="Orders" asp-action="Index" class="nav-item"><i data-lucide="package"></i> My Orders</a>
+                <a asp-controller="Home" asp-action="Wishlist" class="nav-item"><i data-lucide="heart"></i> My Wishlist</a>
+                <a href="#" class="nav-item"><i data-lucide="map-pin"></i> Address Book</a>
+                <a href="#" class="nav-item"><i data-lucide="credit-card"></i> Payment Methods</a>
+                <div style="height: 1px; background: #f0f0f0; margin: 10px 0;"></div>
+                <a asp-controller="User" asp-action="Logout" class="nav-item" style="color:#ff4d4d;">
+                    <i data-lucide="log-out"></i> Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="profile-content">
+            <h2>Personal Profile</h2>
+            
+            <div class="info-grid">
+                <div class="info-group">
+                    <label>Full Name</label>
+                    <div class="value">@Model?.uname</div>
+                </div>
+                <div class="info-group">
+                    <label>Email Address</label>
+                    <div class="value">@Model?.uemail</div>
+                </div>
+                <div class="info-group">
+                    <label>Phone Number</label>
+                    <div class="value">@(Model?.uphone ?? "Not provided")</div>
+                </div>
+                <div class="info-group">
+                    <label>Account Status</label>
+                    <div class="value" style="border:none; padding:0; background:transparent;">
+                        @if (Model?.verifystatus == true)
+                        {
+                            <span class="badge-verified"><i data-lucide="check-circle" style="width:14px;"></i> Verified</span>
+                        }
+                        else
+                        {
+                            <span class="badge-verified" style="background:#fff7ed; color:#f97316;"><i data-lucide="alert-circle" style="width:14px;"></i> Unverified</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="hero-btn hero-btn-primary" style="padding: 10px 30px;">Edit Profile</button>
+                <button class="hero-btn hero-btn-ghost" style="padding: 10px 30px;">Change Password</button>
+            </div>
+
+            <div style="margin-top: 50px;">
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Recent Activity</h3>
+                <div style="padding: 30px; background: #fcfcfc; border: 1px dashed #e2e2e2; border-radius: 8px; text-align: center; color: var(--text-muted); font-size: 14px;">
+                    <i data-lucide="history" style="width: 30px; height: 30px; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p>No recent activity to show.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+}

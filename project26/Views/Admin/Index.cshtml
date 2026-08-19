@@ -1,0 +1,272 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-title-block">
+        <h1 class="page-title">Overview</h1>
+        <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
+    </div>
+    <div class="header-search">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" placeholder="Search..." class="search-input" id="dashboard-search" />
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="stat-grid">
+    <!-- Total Revenue -->
+    <div class="stat-card" style="--accent: #ec4899;">
+        <div class="stat-card-top">
+            <div class="stat-icon">
+                <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="stat-body">
+                <div class="stat-label">TOTAL REVENUE</div>
+                <div class="stat-value">$128.4K</div>
+                <div class="stat-trend up">
+                    <i data-lucide="trending-up" style="width:12px;"></i> 15.3%
+                </div>
+            </div>
+        </div>
+        <div class="stat-bar" style="background: linear-gradient(90deg, #ec4899, #f43f5e);"></div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="stat-card" style="--accent: #f59e0b;">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="color: #f59e0b;">
+                <i data-lucide="shopping-bag"></i>
+            </div>
+            <div class="stat-body">
+                <div class="stat-label">TOTAL ORDERS</div>
+                <div class="stat-value">3,240</div>
+                <div class="stat-trend up">
+                    <i data-lucide="trending-up" style="width:12px;"></i> 2.4%
+                </div>
+            </div>
+        </div>
+        <div class="stat-bar" style="background: linear-gradient(90deg, #f59e0b, #fb923c);"></div>
+    </div>
+
+    <!-- Visits -->
+    <div class="stat-card" style="--accent: #8b5cf6;">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="color: #8b5cf6;">
+                <i data-lucide="eye"></i>
+            </div>
+            <div class="stat-body">
+                <div class="stat-label">VISITS</div>
+                <div class="stat-value">84.2K</div>
+                <div class="stat-trend up">
+                    <i data-lucide="trending-up" style="width:12px;"></i> 8.1%
+                </div>
+            </div>
+        </div>
+        <div class="stat-bar" style="background: linear-gradient(90deg, #8b5cf6, #a78bfa);"></div>
+    </div>
+
+    <!-- Net Profit -->
+    <div class="stat-card" style="--accent: #10b981;">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="color: #10b981;">
+                <i data-lucide="briefcase"></i>
+            </div>
+            <div class="stat-body">
+                <div class="stat-label">NET PROFIT</div>
+                <div class="stat-value">$42.8K</div>
+                <div class="stat-trend up">
+                    <i data-lucide="trending-up" style="width:12px;"></i> 3.3%
+                </div>
+            </div>
+        </div>
+        <div class="stat-bar" style="background: linear-gradient(90deg, #10b981, #34d399);"></div>
+    </div>
+</div>
+
+<!-- Middle Row: Revenue Analytics + Top Performers -->
+<div class="mid-grid">
+    <!-- Revenue Analytics Chart -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Revenue Analytics</h2>
+            <div class="panel-actions">
+                <select class="time-select" id="revenue-period">
+                    <option>This year</option>
+                    <option>Last year</option>
+                    <option>Last 6 months</option>
+                </select>
+            </div>
+        </div>
+        <div class="chart-wrap">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Top Performers</h2>
+            <p class="panel-sub">By units sold this month.</p>
+        </div>
+        <div class="performers-list">
+            <div class="performer-item">
+                <div class="performer-info">
+                    <div class="performer-name">Sonic Bass Pro</div>
+                    <div class="performer-id">ID: #s-2900</div>
+                </div>
+                <div class="performer-rank rank-1">1</div>
+                <div class="performer-sold"><span class="sold-num">1.2K</span> SOLD</div>
+            </div>
+            <div class="performer-item">
+                <div class="performer-info">
+                    <div class="performer-name">Velocity Runner</div>
+                    <div class="performer-id">ID: #s-2890</div>
+                </div>
+                <div class="performer-rank rank-2">2</div>
+                <div class="performer-sold"><span class="sold-num">980</span> SOLD</div>
+            </div>
+            <div class="performer-item">
+                <div class="performer-info">
+                    <div class="performer-name">Zenith Watch</div>
+                    <div class="performer-id">ID: #s-2770</div>
+                </div>
+                <div class="performer-rank rank-3">3</div>
+                <div class="performer-sold"><span class="sold-num">420</span> SOLD</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders Table -->
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">Recent Orders</h2>
+    </div>
+    <div class="table-wrap">
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>ORDER ID</th>
+                    <th>PRODUCT</th>
+                    <th>DATE</th>
+                    <th>CUSTOMER</th>
+                    <th>AMOUNT</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="order-id">#7821</td>
+                    <td>Sonic Bass Pro</td>
+                    <td>October 24, 2025</td>
+                    <td>Jane Cooper</td>
+                    <td>$149.00</td>
+                    <td><span class="badge badge-completed">Completed</span></td>
+                </tr>
+                <tr>
+                    <td class="order-id">#7820</td>
+                    <td>Velocity Runner</td>
+                    <td>October 23, 2025</td>
+                    <td>Alex Martin</td>
+                    <td>$219.00</td>
+                    <td><span class="badge badge-pending">Pending</span></td>
+                </tr>
+                <tr>
+                    <td class="order-id">#7819</td>
+                    <td>Zenith Watch</td>
+                    <td>October 22, 2025</td>
+                    <td>Sarah Lee</td>
+                    <td>$389.00</td>
+                    <td><span class="badge badge-completed">Completed</span></td>
+                </tr>
+                <tr>
+                    <td class="order-id">#7818</td>
+                    <td>Sonic Bass Pro</td>
+                    <td>October 21, 2025</td>
+                    <td>Mike Johnson</td>
+                    <td>$149.00</td>
+                    <td><span class="badge badge-cancelled">Cancelled</span></td>
+                </tr>
+                <tr>
+                    <td class="order-id">#7817</td>
+                    <td>Velocity Runner</td>
+                    <td>October 20, 2025</td>
+                    <td>Emma Wilson</td>
+                    <td>$219.00</td>
+                    <td><span class="badge badge-completed">Completed</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Revenue Analytics Line Chart
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const data = [30, 82, 65, 50, 92, 48, 70, 99, 88, 72, 60, 68];
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        data: data,
+                        borderColor: '#10b981',
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#181a22',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#252831',
+                            borderColor: 'rgba(255,255,255,0.08)',
+                            borderWidth: 1,
+                            titleColor: '#94a3b8',
+                            bodyColor: '#ffffff',
+                            callbacks: {
+                                label: ctx => ' $' + ctx.parsed.y + 'K'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#64748b', font: { size: 11 } },
+                            grid: { color: 'rgba(255,255,255,0.03)' },
+                            border: { dash: [4, 4] }
+                        },
+                        y: {
+                            ticks: { color: '#64748b', font: { size: 11 }, stepSize: 20 },
+                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            border: { display: false },
+                            min: 0, max: 100
+                        }
+                    }
+                }
+            });
+
+            lucide.createIcons();
+        });
+    </script>
+}

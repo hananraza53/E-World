@@ -1,0 +1,1564 @@
+@{
+    ViewData["Title"] = "Online Shopping in Pakistan: Fashion, Electronics & More";
+    var featuredProducts = (IEnumerable<project26.Models.Product>)ViewBag.FeaturedProducts ?? new List<project26.Models.Product>();
+    var flashSaleProducts = (IEnumerable<project26.Models.Product>)ViewBag.FlashSaleProducts ?? new List<project26.Models.Product>();
+    var categories = (IEnumerable<project26.Models.Category>)ViewBag.Categories ?? new List<project26.Models.Category>();
+
+    var localImages = new string[] { "/images/mobile1.jfif", "/images/mobile2.png", "/images/watch1.webp", "/images/watch2.jfif", "/images/skin.webp", "/images/skin2.jpeg", "/images/skin3.webp", "/images/skin4.webp", "/images/skii-pink.jpg" };
+}
+
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<style>
+    .daraz-home-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-top: 20px;
+    }
+
+    /* ── Hero Section ───────────────────────────────────── */
+    .hero-wrapper {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .hero-sidebar {
+        width: 250px;
+        background: #fff;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        padding: 10px 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .hero-sidebar a {
+        padding: 8px 20px;
+        font-size: 13px;
+        color: #212121;
+        text-decoration: none;
+        display: flex;
+        justify-content: space-between;
+        transition: background 0.2s;
+    }
+    .hero-sidebar a:hover {
+        background: #f5f5f5;
+        color: var(--accent-pink);
+    }
+    
+    .hero-slider-container {
+        flex: 1;
+        border-radius: 4px;
+        overflow: hidden;
+        height: 350px;
+    }
+    
+    .hero-slide {
+        width: 100%;
+        height: 100%;
+        background-color: #ffe6d9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 50px;
+    }
+    .hero-slide img {
+        height: 80%;
+        object-fit: contain;
+    }
+
+    /* Professional Banner Styles */
+    .professional-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 80px !important;
+        gap: 40px;
+    }
+    .banner-text-side {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .professional-title {
+        font-size: 44px;
+        font-weight: 800;
+        color: var(--accent-pink);
+        margin-bottom: 15px;
+        line-height: 1.1;
+    }
+    .professional-desc {
+        font-size: 18px;
+        color: #4b5563;
+        max-width: 450px;
+        line-height: 1.5;
+    }
+    /* Theme Matched Banner Styles */
+    .theme-matched-banner {
+        background: linear-gradient(135deg, var(--accent-pink) 0%, #ff7b33 100%) !important;
+        position: relative;
+        overflow: hidden;
+    }
+    .theme-matched-banner::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        z-index: 1;
+    }
+    .banner-text-side {
+        position: relative;
+        z-index: 5;
+        flex: 1.2;
+    }
+    .banner-image-side {
+        flex: 0.8;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        position: relative;
+        z-index: 5;
+    }
+    .banner-image-frame {
+        width: 350px;
+        height: 280px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.4s ease;
+    }
+    .banner-image-frame:hover {
+        transform: translateY(-10px);
+    }
+    .banner-image-frame img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain !important;
+        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.2));
+    }
+
+    /* ── Flash Sale ────────────────────────────────────── */
+    .flash-sale {
+        background: #fff;
+        border-radius: 4px;
+        padding: 15px 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .flash-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e2e2e2;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+    .flash-title {
+        color: var(--accent-pink);
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+    }
+    .flash-timer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #212121;
+        font-weight: 500;
+    }
+    .timer-box {
+        background: var(--accent-pink);
+        color: #fff;
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 700;
+    }
+    .shop-more {
+        border: 1px solid var(--accent-pink);
+        color: var(--accent-pink);
+        padding: 5px 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        text-decoration: none;
+    }
+    .shop-more:hover {
+        background: var(--accent-pink);
+        color: #fff;
+    }
+
+    /* ── Products Grid ─────────────────────────────────── */
+    .section-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #212121;
+        margin-bottom: 15px;
+    }
+
+    .daraz-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+        margin-bottom: 40px;
+    }
+
+    .daraz-card {
+        background: #fff;
+        border-radius: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #f0f0f0;
+    }
+    .daraz-card:hover {
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+        z-index: 2;
+        border-color: transparent;
+    }
+    
+    .d-img-box {
+        width: 100%;
+        aspect-ratio: 1;
+        background: #f8f8f8;
+        overflow: hidden;
+        position: relative;
+    }
+    .d-img-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+    .daraz-card:hover .d-img-box img {
+        transform: scale(1.1);
+    }
+
+    /* Wishlist Heart */
+    .wishlist-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        background: rgba(255,255,255,0.8);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9e9e9e;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+    .wishlist-btn:hover {
+        background: #fff;
+        color: var(--accent-pink);
+        transform: scale(1.1);
+    }
+    .wishlist-btn.active {
+        color: var(--accent-pink);
+    }
+    
+    .d-info {
+        padding: 12px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .d-title {
+        font-size: 14px;
+        color: #212121;
+        line-height: 1.4;
+        height: 40px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        font-weight: 500;
+    }
+    .d-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--accent-pink);
+        margin-top: auto;
+    }
+    .d-old-price {
+        font-size: 12px;
+        color: #9e9e9e;
+        text-decoration: line-through;
+        margin-right: 5px;
+    }
+    .d-discount {
+        font-size: 11px;
+        color: #f85606;
+        background: #fff0e8;
+        padding: 2px 6px;
+        border-radius: 2px;
+        font-weight: 600;
+    }
+
+    .card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 0 12px 12px 12px;
+        background: #fff;
+        margin-top: 0;
+    }
+
+    .btn-card {
+        padding: 8px 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s;
+        border: 1px solid var(--accent-pink);
+    }
+    .btn-cart {
+        background: #fff;
+        color: var(--accent-pink);
+    }
+    .btn-cart:hover {
+        background: var(--accent-pink);
+        color: #fff;
+    }
+    .btn-buy {
+        background: var(--accent-pink);
+        color: #fff;
+    }
+    .btn-buy:hover {
+        background: #d74704;
+        border-color: #d74704;
+    }
+    
+    .d-rating {
+        font-size: 11px;
+        color: #9e9e9e;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
+    
+    /* ── Categories Grid ───────────────────────────────── */
+    .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        background: #fff;
+        border-radius: 4px;
+        border: 1px solid #e2e2e2;
+        margin-bottom: 30px;
+    }
+    .cat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 10px;
+        border-right: 1px solid #e2e2e2;
+        border-bottom: 1px solid #e2e2e2;
+        text-decoration: none;
+        color: #212121;
+        transition: box-shadow 0.2s;
+    }
+    .cat-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 2;
+    }
+    .cat-item img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+        background: #f5f5f5;
+    }
+    .cat-item span {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    /* ── Floating WhatsApp Chatbox Styles ── */
+    .wa-chat-container {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    /* Float Button styling */
+    .wa-float-btn {
+        width: 60px;
+        height: 60px;
+        background-color: #25d366;
+        color: #ffffff;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: waPulse 2s infinite alternate;
+    }
+    .wa-float-btn:hover {
+        transform: scale(1.1) rotate(8deg);
+        background-color: #20ba5a;
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+    }
+    .wa-float-btn svg {
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+    }
+
+    /* Badge styling */
+    .wa-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        background-color: #ff3b30;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: waBadgeBounce 1s infinite alternate;
+    }
+
+    /* Chat Window styling */
+    .wa-chat-window {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 360px;
+        max-width: 90vw;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transform: translateY(20px) scale(0.95);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: bottom right;
+    }
+    .wa-chat-window.open {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    /* Chat Header styling */
+    .wa-chat-header {
+        background-color: #075e54;
+        color: #ffffff;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .wa-agent-avatar {
+        position: relative;
+        width: 40px;
+        height: 40px;
+    }
+    .wa-agent-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .wa-agent-status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        background-color: #4cd964;
+        border-radius: 50%;
+        border: 2px solid #075e54;
+        box-shadow: 0 0 0 2px rgba(76, 217, 100, 0.4);
+        animation: waDotPulse 1.5s infinite;
+    }
+    .wa-agent-info {
+        flex: 1;
+    }
+    .wa-agent-name {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .wa-agent-status {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 1px;
+    }
+    .wa-close-btn {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+        border-radius: 50%;
+    }
+    .wa-close-btn:hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Chat Body styling */
+    .wa-chat-body {
+        background-color: #e5ddd5;
+        background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+        background-repeat: repeat;
+        background-size: 400px;
+        padding: 16px;
+        max-height: 250px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    .wa-message-bubble {
+        max-width: 85%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        position: relative;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    .wa-message-bubble.incoming {
+        background-color: #ffffff;
+        align-self: flex-start;
+        border-top-left-radius: 0;
+        color: #333333;
+    }
+    .wa-message-sender {
+        font-size: 11px;
+        font-weight: 600;
+        color: #075e54;
+        margin-bottom: 3px;
+    }
+    .wa-message-time {
+        font-size: 9px;
+        color: #888888;
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    /* Chat Footer / Input styling */
+    .wa-chat-footer {
+        background-color: #f0f0f0;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .wa-chat-input {
+        width: 100%;
+        background-color: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 13px;
+        outline: none;
+        resize: none;
+        transition: border-color 0.2s;
+        font-family: inherit;
+        line-height: 1.4;
+    }
+    .wa-chat-input:focus {
+        border-color: #075e54;
+    }
+    .wa-send-btn {
+        background-color: #075e54;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, transform 0.1s;
+        box-shadow: 0 2px 4px rgba(7, 94, 84, 0.2);
+    }
+    .wa-send-btn:hover {
+        background-color: #054d44;
+    }
+    .wa-send-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Keyframes */
+    @@keyframes waPulse {
+        0% {
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        }
+        100% {
+            box-shadow: 0 4px 25px rgba(37, 211, 102, 0.8), 0 0 0 10px rgba(37, 211, 102, 0);
+        }
+    }
+    @@keyframes waBadgeBounce {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(-3px);
+        }
+    }
+    @@keyframes waDotPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 6px rgba(76, 217, 100, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(76, 217, 100, 0);
+        }
+    }
+
+    /* ── Floating Live Chatbox Styles (Bottom-Left) ── */
+    .lc-chat-container {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        z-index: 9999;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* Float Button styling */
+    .lc-float-btn {
+        width: 60px;
+        height: 60px;
+        background-color: #3f51b5;
+        color: #ffffff;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(63, 81, 181, 0.4);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: lcPulse 2s infinite alternate;
+    }
+    .lc-float-btn:hover {
+        transform: scale(1.1) rotate(-8deg);
+        background-color: #303f9f;
+        box-shadow: 0 6px 20px rgba(63, 81, 181, 0.6);
+    }
+    .lc-float-btn svg {
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+    }
+
+    /* Badge styling */
+    .lc-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        background-color: #ff9800;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: lcBadgeBounce 1s infinite alternate;
+    }
+
+    /* Chat Window styling */
+    .lc-chat-window {
+        position: absolute;
+        bottom: 80px;
+        left: 0;
+        width: 360px;
+        max-width: 90vw;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transform: translateY(20px) scale(0.95);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: bottom left;
+    }
+    .lc-chat-window.open {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    /* Chat Header styling */
+    .lc-chat-header {
+        background-color: #3f51b5;
+        color: #ffffff;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .lc-agent-avatar {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .lc-agent-status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        background-color: #4cd964;
+        border-radius: 50%;
+        border: 2px solid #3f51b5;
+        box-shadow: 0 0 0 2px rgba(76, 217, 100, 0.4);
+        animation: lcDotPulse 1.5s infinite;
+    }
+    .lc-agent-info {
+        flex: 1;
+    }
+    .lc-agent-name {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .lc-agent-status {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.85);
+        margin-top: 1px;
+    }
+    .lc-close-btn {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+        border-radius: 50%;
+    }
+    .lc-close-btn:hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Chat Body styling */
+    .lc-chat-body {
+        background-color: #f4f5f7;
+        padding: 16px;
+        max-height: 250px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .lc-message-bubble {
+        max-width: 85%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        position: relative;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    .lc-message-bubble.incoming {
+        background-color: #ffffff;
+        align-self: flex-start;
+        border-top-left-radius: 0;
+        color: #333333;
+    }
+    .lc-message-bubble.outgoing {
+        background-color: #e8eaf6;
+        align-self: flex-end;
+        border-top-right-radius: 0;
+        color: #333333;
+    }
+    .lc-message-sender {
+        font-size: 11px;
+        font-weight: 600;
+        color: #3f51b5;
+        margin-bottom: 3px;
+    }
+    .lc-message-time {
+        font-size: 9px;
+        color: #888888;
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    /* Chat Footer / Input styling */
+    .lc-chat-footer {
+        background-color: #ffffff;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .lc-chat-input {
+        width: 100%;
+        background-color: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 13px;
+        outline: none;
+        resize: none;
+        transition: border-color 0.2s;
+        font-family: inherit;
+        line-height: 1.4;
+    }
+    .lc-chat-input:focus {
+        border-color: #3f51b5;
+    }
+    .lc-send-btn {
+        background-color: #3f51b5;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, transform 0.1s;
+        box-shadow: 0 2px 4px rgba(63, 81, 181, 0.2);
+    }
+    .lc-send-btn:hover {
+        background-color: #303f9f;
+    }
+    .lc-send-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Keyframes */
+    @@keyframes lcPulse {
+        0% {
+            box-shadow: 0 4px 15px rgba(63, 81, 181, 0.4);
+        }
+        100% {
+            box-shadow: 0 4px 25px rgba(63, 81, 181, 0.8), 0 0 0 10px rgba(63, 81, 181, 0);
+        }
+    }
+    @@keyframes lcBadgeBounce {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(-3px);
+        }
+    }
+    @@keyframes lcDotPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 6px rgba(76, 217, 100, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(76, 217, 100, 0);
+        }
+    }
+</style>
+
+<div class="daraz-home-container">
+
+    <!-- Hero Section -->
+    <div class="hero-wrapper">
+        <div class="hero-sidebar">
+            @if(categories.Any()) {
+                foreach(var cat in categories.Take(12)) {
+                    <a asp-controller="Products" asp-action="Index" asp-route-category="@cat.cname">
+                        @cat.cname <i data-lucide="chevron-right" style="width:14px;"></i>
+                    </a>
+                }
+            } else {
+                <a href="#">Electronic Devices <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Electronic Accessories <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">TV & Home Appliances <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Health & Beauty <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Babies & Toys <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Groceries & Pets <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Home & Lifestyle <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Women's Fashion <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Men's Fashion <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Watches & Accessories <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Sports & Outdoor <i data-lucide="chevron-right" style="width:14px;"></i></a>
+                <a href="#">Automotive & Motorbike <i data-lucide="chevron-right" style="width:14px;"></i></a>
+            }
+        </div>
+        
+        <div class="hero-slider-container">
+            <div class="swiper main-swiper" style="height:100%;">
+                <div class="swiper-wrapper">
+                    @if (ViewBag.Banners != null && ((IEnumerable<project26.Models.Banner>)ViewBag.Banners).Any())
+                    {
+                        foreach (var banner in (IEnumerable<project26.Models.Banner>)ViewBag.Banners)
+                        {
+                            <div class="swiper-slide">
+                                <div class="hero-slide professional-banner theme-matched-banner">
+                                    <div class="banner-text-side">
+                                        <h2 class="professional-title" style="color: #fff;">@banner.btitle</h2>
+                                        <p class="professional-desc" style="color: rgba(255,255,255,0.9);">@banner.bdescription</p>
+                                        <a href="/Products" class="hero-btn hero-btn-ghost" style="margin-top:20px; background: #fff; color: var(--accent-pink) !important;">Shop Now</a>
+                                    </div>
+                                    <div class="banner-image-side">
+                                        <div class="banner-image-frame">
+                                            <img src="@banner.ImageUrl" alt="Banner Image">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="swiper-slide">
+                            <div class="hero-slide" style="background: linear-gradient(90deg, #ffede2, #ffdabf);">
+                                <div>
+                                    <h2 style="font-size:36px; font-weight:800; color:var(--accent-pink);">GRAND TECH SALE</h2>
+                                    <p style="font-size:18px;">Up to 60% OFF on all electronics</p>
+                                    <a href="/Products" class="hero-btn hero-btn-primary" style="margin-top:20px;">Shop Now</a>
+                                </div>
+                                <img src="/images/mobile2.png" style="border-radius:10px; max-height: 280px;" alt="Mobile">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="hero-slide" style="background: linear-gradient(90deg, #e0f2fe, #bae6fd);">
+                                <div>
+                                    <h2 style="font-size:36px; font-weight:800; color:#0284c7;">NEW ARRIVALS</h2>
+                                    <p style="font-size:18px;">Discover the latest lifestyle products</p>
+                                    <a href="/Products" class="hero-btn hero-btn-primary" style="margin-top:20px; background:#0284c7;">Explore</a>
+                                </div>
+                                <img src="/images/watch1.webp" style="border-radius:10px; max-height: 280px;" alt="Watch">
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Sale -->
+    <div class="flash-sale">
+        <div class="flash-header">
+            <div style="display:flex; align-items:center; gap:30px;">
+                <h3 class="flash-title">Flash Sale</h3>
+                <div class="flash-timer">
+                    On Sale Now
+                    <span class="timer-box" id="hours">00</span> : <span class="timer-box" id="minutes">00</span> : <span class="timer-box" id="seconds">00</span>
+                </div>
+            </div>
+            <a asp-controller="Products" asp-action="Index" class="shop-more">SHOP MORE</a>
+        </div>
+        
+        <div class="daraz-grid">
+            @if(flashSaleProducts.Any()) {
+                foreach(var item in flashSaleProducts) {
+                    <div class="daraz-card">
+                        <button class="wishlist-btn" onclick="addToWishlist(@item.pid)">
+                            <i data-lucide="heart" style="width:18px; height:18px;"></i>
+                        </button>
+                        <a asp-controller="Products" asp-action="Details" asp-route-id="@item.pid" style="text-decoration:none; color:inherit;">
+                            <div class="d-img-box">
+                                @{
+                                    var imgUrl = (item.Image != null && item.Image.Any()) ? item.Image.First().ImageUrl : localImages[item.pid % localImages.Length];
+                                }
+                                <img src="@imgUrl" alt="@item.pname">
+                            </div>
+                            <div class="d-info">
+                                <div class="d-title">@item.pname</div>
+                                <div class="d-price">Rs. @(item.pdis > 0 ? item.pdisprice : item.pprice)</div>
+                                @if(item.pdis > 0) {
+                                    <div><span class="d-old-price">Rs. @item.pprice</span> <span class="d-discount">-@item.pdis%</span></div>
+                                }
+                            </div>
+                        </a>
+                        <div class="card-actions">
+                            <div class="btn-card btn-cart" onclick="addToCart(@item.pid)">Add to Cart</div>
+                            <div class="btn-card btn-buy" onclick="buyNow(@item.pid)">Buy <br> Now</div>
+                        </div>
+                    </div>
+                }
+            } else {
+                @for(int i=0; i<6; i++) {
+                    var imgPath = localImages[i % localImages.Length];
+                    <div class="daraz-card">
+                        <div class="d-img-box"><img src="@imgPath" alt="Product"></div>
+                        <div class="d-info">
+                            <div class="d-title">Flash Sale Product @(i+1)</div>
+                            <div class="d-price">Rs. @(1000 + i * 200)</div>
+                            <div><span class="d-old-price">Rs. @(2000 + i * 200)</span> <span class="d-discount">-50%</span></div>
+                        </div>
+                        <div class="card-actions">
+                            <div class="btn-card btn-cart" onclick="addToCart(0)">Add to Cart</div>
+                            <div class="btn-card btn-buy" onclick="buyNow(0)">Buy <br> Now</div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <h3 class="section-title">Categories</h3>
+    <div class="cat-grid">
+        @if(categories.Any()) {
+            foreach(var cat in categories.Take(16)) {
+                <a asp-controller="Products" asp-action="Index" asp-route-category="@cat.cname" class="cat-item">
+                    <img src="@(string.IsNullOrEmpty(cat.Imageurl) ? localImages[cat.cid % localImages.Length] : cat.Imageurl)" alt="@cat.cname">
+                    <span>@cat.cname</span>
+                </a>
+            }
+        } else {
+            @for(int i=1; i<=8; i++) {
+                var imgPath = localImages[(i-1) % localImages.Length];
+                <a href="#" class="cat-item">
+                    <img src="@imgPath" alt="Cat">
+                    <span>Category @i</span>
+                </a>
+            }
+        }
+    </div>
+
+    <!-- Just For You -->
+    <h3 class="section-title" id="products-section">Just For You</h3>
+    <div class="daraz-grid">
+        @if(featuredProducts.Any()) {
+            foreach(var item in featuredProducts) {
+                <div class="daraz-card">
+                    <button class="wishlist-btn" onclick="addToWishlist(@item.pid)">
+                        <i data-lucide="heart" style="width:18px; height:18px;"></i>
+                    </button>
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@item.pid" style="color:inherit; text-decoration:none;">
+                        <div class="d-img-box">
+                            @{
+                                var imgUrl = (item.Image != null && item.Image.Any()) ? item.Image.First().ImageUrl : localImages[item.pid % localImages.Length];
+                            }
+                            <img src="@imgUrl" alt="@item.pname">
+                        </div>
+                        <div class="d-info">
+                            <div class="d-title">@item.pname</div>
+                            <div class="d-price">Rs. @(item.pdis > 0 ? item.pdisprice : item.pprice)</div>
+                            @if(item.pdis > 0) {
+                                <div style="margin-top:2px;"><span class="d-old-price">Rs. @item.pprice</span> <span class="d-discount">-@item.pdis%</span></div>
+                            }
+                        </div>
+                    </a>
+                    <div class="card-actions">
+                        <div class="btn-card btn-cart" onclick="addToCart(@item.pid)">Add to Cart</div>
+                        <div class="btn-card btn-buy" onclick="buyNow(@item.pid)">Buy <br> Now</div>
+                    </div>
+                </div>
+            }
+        } else {
+            @for(int i=1; i<=12; i++) {
+                var imgPath = localImages[(i-1) % localImages.Length];
+                <div class="daraz-card">
+                    <div class="d-img-box"><img src="@imgPath" alt="Product"></div>
+                    <div class="d-info">
+                        <div class="d-title">Premium E-World Product @i - Exclusive Edition</div>
+                        <div class="d-price">Rs. @(2000 + (i * 150))</div>
+                        <div><span class="d-old-price">Rs. @(3000 + (i * 150))</span> <span class="d-discount">-20%</span></div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="btn-card btn-cart" onclick="addToCart(0)">Add to Cart</div>
+                        <div class="btn-card btn-buy" onclick="buyNow(0)">Buy <br> Now</div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+</div>
+
+<!-- Floating Live Support Chatbox -->
+<div class="lc-chat-container">
+    <!-- Pulse Badge -->
+    <div class="lc-badge" id="lcBadge" style="display: none;">1</div>
+    
+    <!-- Floating Button (Bottom Left) -->
+    <button class="lc-float-btn" id="lcFloatBtn" onclick="toggleLcChat()" aria-label="Live Support Chat">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </button>
+
+    <!-- Chat Window -->
+    <div class="lc-chat-window" id="lcChatWindow">
+        <!-- Chat Header -->
+        <div class="lc-chat-header">
+            <div class="lc-agent-avatar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                </svg>
+                <span class="lc-agent-status-dot"></span>
+            </div>
+            <div class="lc-agent-info">
+                <div class="lc-agent-name">E-World Live Support</div>
+                <div class="lc-agent-status">Online • Ask us anything!</div>
+            </div>
+            <button class="lc-close-btn" onclick="toggleLcChat(false)" aria-label="Close Chat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Chat Body -->
+        <div class="lc-chat-body" id="lcChatBody">
+            <div class="lc-message-bubble incoming">
+                <div class="lc-message-sender">Support Agent</div>
+                <div class="lc-message-text">Hello! 👋 Welcome to our Live Support. Leave us a message and an admin will reply shortly!</div>
+                <div class="lc-message-time" id="lcMessageTime">12:30 PM</div>
+            </div>
+        </div>
+
+        <!-- Chat Footer / Input -->
+        <div class="lc-chat-footer">
+            <textarea class="lc-chat-input" id="lcChatInput" placeholder="Type your message here..." rows="2" onkeydown="handleLcKeydown(event)"></textarea>
+            <button class="lc-send-btn" onclick="sendLcMessage()" id="lcSendBtn" aria-label="Send Message">
+                <span class="lc-send-text">Send</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating WhatsApp Chatbox -->
+<div class="wa-chat-container">
+    <!-- Pulse Badge -->
+    <div class="wa-badge" id="waBadge">1</div>
+    
+    <!-- Floating Button -->
+    <button class="wa-float-btn" id="waFloatBtn" onclick="toggleWaChat()" aria-label="Chat on WhatsApp">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="28" height="28" fill="currentColor">
+            <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L3 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+        </svg>
+    </button>
+
+    <!-- Chat Window -->
+    <div class="wa-chat-window" id="waChatWindow">
+        <!-- Chat Header -->
+        <div class="wa-chat-header">
+            <div class="wa-agent-avatar">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="E-World Support">
+                <span class="wa-agent-status-dot"></span>
+            </div>
+            <div class="wa-agent-info">
+                <div class="wa-agent-name">E-World Support</div>
+                <div class="wa-agent-status">Online • Typically replies in minutes</div>
+            </div>
+            <button class="wa-close-btn" onclick="toggleWaChat(false)" aria-label="Close Chat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Chat Body -->
+        <div class="wa-chat-body">
+            <div class="wa-message-bubble incoming">
+                <div class="wa-message-sender">E-World Assistant</div>
+                <div class="wa-message-text">Hello! 👋 Welcome to E-World. How can we help you today? Ask us about orders, products, or deals!</div>
+                <div class="wa-message-time" id="waMessageTime">12:30 PM</div>
+            </div>
+        </div>
+
+        <!-- Chat Footer / Input -->
+        <div class="wa-chat-footer">
+            <textarea class="wa-chat-input" id="waChatInput" placeholder="Type your message here..." rows="2" onkeydown="handleWaKeydown(event)"></textarea>
+            <button class="wa-send-btn" onclick="sendWaMessage()" id="waSendBtn" aria-label="Send to WhatsApp">
+                <span class="wa-send-text">Send on WhatsApp</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const swiper = new Swiper('.main-swiper', {
+                loop: true,
+                autoplay: { delay: 5000 },
+                pagination: { el: '.swiper-pagination', clickable: true },
+                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            });
+            lucide.createIcons();
+
+            // Flash Sale Timer
+            function updateTimer() {
+                const now = new Date();
+                const hours = 23 - now.getHours();
+                const minutes = 59 - now.getMinutes();
+                const seconds = 59 - now.getSeconds();
+
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            }
+            setInterval(updateTimer, 1000);
+            updateTimer();
+        });
+
+        function addToWishlist(pid) {
+            if(pid === 0) return;
+            fetch('/Cart/AddToWishlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'productId=' + pid
+            }).then(response => {
+                if(response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    alert(data.message);
+                } else if (data) {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function buyNow(pid) {
+            console.log("Buying now: " + pid);
+            if(pid === 0) {
+                alert('This is a demo product. Please use a real product from your shop!');
+                return;
+            }
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'productId=' + pid
+            })
+            .then(res => {
+                if(res.redirected) {
+                    window.location.href = res.url;
+                    return;
+                }
+                window.location.href = '/Home/Checkout?pid=' + pid;
+            })
+            .catch(err => {
+                console.error("Buy Now Error:", err);
+                window.location.href = '/User/Login';
+            });
+        }
+
+        // WhatsApp Support Configuration
+        const WA_PHONE_NUMBER = "923192506226"; // Customize support number (with country code, no +, no spaces)
+
+        function toggleWaChat(show) {
+            const chatWindow = document.getElementById('waChatWindow');
+            const badge = document.getElementById('waBadge');
+            
+            // Toggle opened state
+            if (show === undefined) {
+                chatWindow.classList.toggle('open');
+            } else if (show) {
+                chatWindow.classList.add('open');
+            } else {
+                chatWindow.classList.remove('open');
+            }
+            
+            // Dismiss notification badge when opened
+            if (chatWindow.classList.contains('open')) {
+                if (badge) badge.style.display = 'none';
+                // Save state so we don't show the badge again in this session
+                sessionStorage.setItem('wa_badge_dismissed', 'true');
+                
+                // Focus the input
+                setTimeout(() => {
+                    document.getElementById('waChatInput').focus();
+                }, 100);
+            }
+        }
+
+        function handleWaKeydown(event) {
+            // Send message on Enter (without Shift)
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendWaMessage();
+            }
+        }
+
+        function sendWaMessage() {
+            const inputEl = document.getElementById('waChatInput');
+            const message = inputEl.value.trim();
+            
+            // Construct the WhatsApp URL
+            // If message is empty, just direct open the chat window, otherwise send text
+            let url = `https://api.whatsapp.com/send?phone=${WA_PHONE_NUMBER}`;
+            if (message.length > 0) {
+                url += `&text=${encodeURIComponent(message)}`;
+            }
+            
+            // Clear input
+            inputEl.value = '';
+            
+            // Open in a new tab/window
+            window.open(url, '_blank');
+            
+            // Close the chat window after redirecting
+            toggleWaChat(false);
+        }
+
+        // Initialize chatbox states
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set dynamic current time in the chat bubble
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            const timeString = `${displayHours}:${minutes} ${ampm}`;
+            const timeEl = document.getElementById('waMessageTime');
+            if (timeEl) {
+                timeEl.textContent = timeString;
+            }
+            
+            // Check if badge was already dismissed
+            if (sessionStorage.getItem('wa_badge_dismissed') === 'true') {
+                const badge = document.getElementById('waBadge');
+                if (badge) badge.style.display = 'none';
+            }
+            
+            // Auto-open chatbox after 5 seconds if not already closed/opened in past
+            if (!sessionStorage.getItem('wa_chat_auto_prompted') && !sessionStorage.getItem('wa_badge_dismissed')) {
+                setTimeout(() => {
+                    const chatWindow = document.getElementById('waChatWindow');
+                    if (chatWindow && !chatWindow.classList.contains('open')) {
+                        toggleWaChat(true);
+                        sessionStorage.setItem('wa_chat_auto_prompted', 'true');
+                    }
+                }, 5000);
+            }
+        });
+
+        // ── Floating Live Chatbox Logic (Bottom-Left) ──
+        let lcSessionId = localStorage.getItem('lc_chat_session_id');
+        if (!lcSessionId) {
+            lcSessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('lc_chat_session_id', lcSessionId);
+        }
+
+        let lcPollInterval = null;
+        let lastLcMessageCount = 0;
+
+        function toggleLcChat(show) {
+            const chatWindow = document.getElementById('lcChatWindow');
+            const badge = document.getElementById('lcBadge');
+            
+            if (show === undefined) {
+                chatWindow.classList.toggle('open');
+            } else if (show) {
+                chatWindow.classList.add('open');
+            } else {
+                chatWindow.classList.remove('open');
+            }
+            
+            if (chatWindow.classList.contains('open')) {
+                if (badge) badge.style.display = 'none';
+                sessionStorage.setItem('lc_badge_dismissed', 'true');
+                
+                // Load messages and start polling
+                loadLcMessages();
+                if (lcPollInterval) clearInterval(lcPollInterval);
+                lcPollInterval = setInterval(loadLcMessages, 3000);
+                
+                setTimeout(() => {
+                    document.getElementById('lcChatInput').focus();
+                }, 100);
+            } else {
+                if (lcPollInterval) {
+                    clearInterval(lcPollInterval);
+                    lcPollInterval = null;
+                }
+            }
+        }
+
+        function handleLcKeydown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendLcMessage();
+            }
+        }
+
+        function loadLcMessages() {
+            if (!lcSessionId) return;
+            fetch(`/Chat/GetMessages?sessionId=${lcSessionId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success) {
+                        const bodyEl = document.getElementById('lcChatBody');
+                        if (!bodyEl) return;
+                        
+                        // Default welcome message always exists, plus database messages
+                        let html = `
+                            <div class="lc-message-bubble incoming">
+                                <div class="lc-message-sender">Support Agent</div>
+                                <div class="lc-message-text">Hello! 👋 Welcome to our Live Support. Leave us a message and an admin will reply shortly!</div>
+                                <div class="lc-message-time" id="lcMessageTime">12:30 PM</div>
+                            </div>
+                        `;
+                        
+                        data.messages.forEach(m => {
+                            const direction = m.isFromAdmin ? 'incoming' : 'outgoing';
+                            const sender = m.isFromAdmin ? 'Admin' : m.senderName;
+                            html += `
+                                <div class="lc-message-bubble ${direction}">
+                                    <div class="lc-message-sender">${sender}</div>
+                                    <div class="lc-message-text">${m.messageText}</div>
+                                    <div class="lc-message-time">${m.timestamp}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        const isNewMessage = data.messages.length > lastLcMessageCount;
+                        bodyEl.innerHTML = html;
+                        
+                        // Scroll to bottom if new message arrived
+                        if (isNewMessage) {
+                            bodyEl.scrollTop = bodyEl.scrollHeight;
+                            lastLcMessageCount = data.messages.length;
+                        }
+                    }
+                });
+        }
+
+        function sendLcMessage() {
+            const inputEl = document.getElementById('lcChatInput');
+            const message = inputEl.value.trim();
+            if (!message) return;
+            
+            fetch('/Chat/SendMessage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `sessionId=${lcSessionId}&message=${encodeURIComponent(message)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success) {
+                    inputEl.value = '';
+                    loadLcMessages();
+                }
+            });
+        }
+
+        // Setup welcome message time dynamically on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const lcTimeEl = document.getElementById('lcMessageTime');
+            if (lcTimeEl) {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const displayHours = hours % 12 || 12;
+                lcTimeEl.textContent = `${displayHours}:${minutes} ${ampm}`;
+            }
+
+            // Poll message count silently when chat is closed to alert user of replies
+            setInterval(() => {
+                const chatWindow = document.getElementById('lcChatWindow');
+                if (chatWindow && !chatWindow.classList.contains('open')) {
+                    fetch(`/Chat/GetMessages?sessionId=${lcSessionId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && data.success && data.messages.length > lastLcMessageCount) {
+                                // Check if the last message is from admin
+                                const lastMsg = data.messages[data.messages.length - 1];
+                                if (lastMsg.isFromAdmin) {
+                                    const badge = document.getElementById('lcBadge');
+                                    if (badge) badge.style.display = 'flex';
+                                }
+                                lastLcMessageCount = data.messages.length;
+                            }
+                        });
+                }
+            }, 5000);
+        });
+    </script>
+}

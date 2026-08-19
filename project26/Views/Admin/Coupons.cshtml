@@ -1,0 +1,240 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Coupons Management";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-title-block">
+        <h1 class="page-title">Coupons Management</h1>
+        <p class="page-subtitle">Create and manage dynamic discount codes for your customers.</p>
+    </div>
+    <button class="btn-primary" onclick="openCouponModal('add')">
+        <i data-lucide="ticket-plus" style="width:16px;height:16px;"></i>
+        Create New Coupon
+    </button>
+</div>
+
+<!-- Toolbar -->
+<div class="crud-toolbar">
+    <div class="header-search" style="flex:1; max-width:400px;">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" placeholder="Search coupons..." class="search-input" id="coupon-search" oninput="filterCoupons()" />
+    </div>
+</div>
+
+<!-- Table -->
+<div class="panel" style="padding:0; overflow:hidden;">
+    <div class="table-wrap">
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th style="width:80px;">ID</th>
+                    <th style="text-align:left;">CODE</th>
+                    <th>PRODUCT</th>
+                    <th>DISCOUNT</th>
+                    <th>MIN. ORDER</th>
+                    <th>EXPIRY</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody id="coupon-tbody">
+                <!-- Dynamic Rows via JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── ADD / EDIT MODAL ───────────────────────────────────── -->
+<div class="modal-overlay" id="coupon-modal" onclick="closeCouponModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:500px; width:95%;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="coupon-modal-title">Create Coupon</h3>
+            <button class="modal-close" onclick="closeCouponModal(null)"><i data-lucide="x"></i></button>
+        </div>
+        <form id="coupon-form" onsubmit="saveCoupon(event)">
+            <input type="hidden" id="coupon-edit-id" value="0" />
+            
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label class="form-label">Coupon Code</label>
+                    <input type="text" class="form-input" id="coupon-code" placeholder="e.g. SUMMER25" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apply to Specific Product (Optional)</label>
+                    <select class="form-input" id="coupon-product">
+                        <option value="">All Products</option>
+                        @if (ViewBag.Products != null)
+                        {
+                            foreach (var p in ViewBag.Products)
+                            {
+                                <option value="@p.pid">@p.pname</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="modal-grid-2col">
+                    <div class="form-group">
+                        <label class="form-label">Discount Value</label>
+                        <input type="number" step="0.01" class="form-input" id="coupon-value" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-input" id="coupon-type" required>
+                            <option value="Percentage">Percentage (%)</option>
+                            <option value="Fixed">Fixed (Rs.)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-grid-2col">
+                    <div class="form-group">
+                        <label class="form-label">Min. Order Amount</label>
+                        <input type="number" step="0.01" class="form-input" id="coupon-min" value="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Expiry Date</label>
+                        <input type="date" class="form-input" id="coupon-expiry" />
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                    <input type="checkbox" id="coupon-active" checked />
+                    <label for="coupon-active" class="form-label" style="margin-bottom:0;">Is Active</label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" onclick="closeCouponModal(null)">Cancel</button>
+                <button type="submit" class="btn-primary">Save Coupon</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="coupon-delete-modal" onclick="closeCouponDeleteModal(event)">
+    <div class="modal-box modal-sm" onclick="event.stopPropagation()">
+        <div class="delete-icon-wrap">
+            <i data-lucide="alert-triangle" style="width:32px;height:32px;color:var(--accent-pink);"></i>
+        </div>
+        <h3 class="modal-title" style="text-align:center;">Delete Coupon?</h3>
+        <p id="coupon-del-code" style="text-align:center;font-weight:700;color:var(--accent-pink);margin-bottom:20px;"></p>
+        <input type="hidden" id="coupon-delete-id" />
+        <div class="modal-footer" style="justify-content:center; border:none;">
+            <button class="btn-ghost" onclick="closeCouponDeleteModal(null)">Cancel</button>
+            <button class="btn-danger" onclick="confirmCouponDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let coupons = [];
+
+    async function loadCoupons() {
+        const response = await fetch('/Admin/GetCoupons');
+        coupons = await response.json();
+        renderCoupons(coupons);
+    }
+
+    function renderCoupons(data) {
+        const tbody = document.getElementById('coupon-tbody');
+        tbody.innerHTML = data.map(c => `
+            <tr>
+                <td class="order-id">#${c.id}</td>
+                <td style="text-align:left; font-weight:700; color:var(--text-primary);">${c.code}</td>
+                <td><span class="badge" style="background:rgba(0,0,0,0.05); color:var(--text-secondary);">${c.productName}</span></td>
+                <td>
+                    <div style="font-weight:600;">${c.type === 'Percentage' ? c.discountValue + '%' : 'Rs. ' + c.discountValue}</div>
+                </td>
+                <td>Rs. ${c.minimumAmount || 0}</td>
+                <td>${c.expiryDate ? new Date(c.expiryDate).toLocaleDateString() : 'No Expiry'}</td>
+                <td>
+                    <span class="badge" style="background:${c.isActive ? 'rgba(46,204,113,0.1)' : 'rgba(231,76,60,0.1)'}; color:${c.isActive ? '#2ecc71' : '#e74c3c'};">
+                        ${c.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex; gap:8px; justify-content:center;">
+                        <button class="action-btn action-edit" onclick="openCouponModal('edit', ${c.id})"><i data-lucide="edit-3" style="width:14px;"></i></button>
+                        <button class="action-btn action-delete" onclick="openCouponDeleteModal(${c.id}, '${c.code}')"><i data-lucide="trash-2" style="width:14px;"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function filterCoupons() {
+        const q = document.getElementById('coupon-search').value.toLowerCase();
+        let filtered = coupons.filter(c => c.code.toLowerCase().includes(q));
+        renderCoupons(filtered);
+    }
+
+    function openCouponModal(mode, id) {
+        document.getElementById('coupon-modal').classList.add('open');
+        document.getElementById('coupon-form').reset();
+        document.getElementById('coupon-modal-title').textContent = mode === 'edit' ? 'Edit Coupon' : 'Create Coupon';
+        
+        if (mode === 'edit') {
+            const c = coupons.find(x => x.id === id);
+            document.getElementById('coupon-edit-id').value = c.id;
+            document.getElementById('coupon-code').value = c.code;
+            document.getElementById('coupon-product').value = c.productId || "";
+            document.getElementById('coupon-value').value = c.discountValue;
+            document.getElementById('coupon-type').value = c.type;
+            document.getElementById('coupon-min').value = c.minimumAmount || 0;
+            document.getElementById('coupon-active').checked = c.isActive;
+            if (c.expiryDate) {
+                document.getElementById('coupon-expiry').value = c.expiryDate.split('T')[0];
+            }
+        }
+    }
+
+    function closeCouponModal(e) { if (!e || e.target === document.getElementById('coupon-modal')) document.getElementById('coupon-modal').classList.remove('open'); }
+
+    async function saveCoupon(e) {
+        e.preventDefault();
+        const formData = new URLSearchParams();
+        formData.append('Id', document.getElementById('coupon-edit-id').value);
+        formData.append('Code', document.getElementById('coupon-code').value);
+        formData.append('ProductId', document.getElementById('coupon-product').value);
+        formData.append('DiscountValue', document.getElementById('coupon-value').value);
+        formData.append('Type', document.getElementById('coupon-type').value);
+        formData.append('MinimumAmount', document.getElementById('coupon-min').value);
+        formData.append('ExpiryDate', document.getElementById('coupon-expiry').value);
+        formData.append('IsActive', document.getElementById('coupon-active').checked);
+
+        await fetch('/Admin/SaveCoupon', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData 
+        });
+        closeCouponModal(null);
+        loadCoupons();
+    }
+
+    function openCouponDeleteModal(id, code) {
+        document.getElementById('coupon-delete-id').value = id;
+        document.getElementById('coupon-del-code').textContent = code;
+        document.getElementById('coupon-delete-modal').classList.add('open');
+    }
+
+    function closeCouponDeleteModal(e) { if (!e || e.target === document.getElementById('coupon-delete-modal')) document.getElementById('coupon-delete-modal').classList.remove('open'); }
+
+    async function confirmCouponDelete() {
+        const id = document.getElementById('coupon-delete-id').value;
+        const formData = new URLSearchParams();
+        formData.append('id', id);
+        await fetch(`/Admin/DeleteCoupon`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        });
+        closeCouponDeleteModal(null);
+        loadCoupons();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCoupons);
+</script>
+}

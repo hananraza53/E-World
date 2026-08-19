@@ -1,0 +1,223 @@
+@{
+    ViewData["Title"] = "My Wishlist";
+}
+
+<style>
+    .wishlist-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .wishlist-header {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .wishlist-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+    }
+
+    .wish-card {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+    }
+
+    .wish-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .remove-wish {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-muted);
+        z-index: 10;
+        transition: color 0.2s;
+    }
+
+    .remove-wish:hover {
+        color: #ff4d4d;
+    }
+
+    .wish-img {
+        width: 100%;
+        aspect-ratio: 1;
+        background: #f5f5f5;
+    }
+
+    .wish-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .wish-info {
+        padding: 15px;
+    }
+
+    .wish-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        height: 40px;
+    }
+
+    .wish-price {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--accent-pink);
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .add-to-cart-btn {
+        width: 100%;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid var(--accent-pink);
+        color: var(--accent-pink);
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .add-to-cart-btn:hover {
+        background: var(--accent-pink);
+        color: #fff;
+    }
+
+    /* ── Empty Wishlist ──────────────────────────────────── */
+    .empty-wishlist {
+        text-align: center;
+        padding: 100px 20px;
+        background: #fff;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="wishlist-container">
+    <div class="wishlist-header">
+        <h1 class="wishlist-title">My Wishlist (5 items)</h1>
+        <button class="hero-btn hero-btn-ghost" style="padding: 8px 16px; font-size: 12px;">Add All to Cart</button>
+    </div>
+
+    <div class="wishlist-grid">
+        <!-- Item 1 -->
+        <div class="wish-card">
+            <div class="remove-wish"><i data-lucide="trash-2" style="width:16px;"></i></div>
+            <div class="wish-img">
+                <img src="/images/watch1.webp" alt="Watch">
+            </div>
+            <div class="wish-info">
+                <span class="wish-name">Premium Minimalist Watch - Silver Mesh Strap</span>
+                <span class="wish-price">Rs. 4,200</span>
+                <button class="add-to-cart-btn">
+                    <i data-lucide="shopping-cart" style="width:16px;"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="wish-card">
+            <div class="remove-wish"><i data-lucide="trash-2" style="width:16px;"></i></div>
+            <div class="wish-img">
+                <img src="/images/mobile2.png" alt="Mobile">
+            </div>
+            <div class="wish-info">
+                <span class="wish-name">Wireless Noise Cancelling Headphones</span>
+                <span class="wish-price">Rs. 15,500</span>
+                <button class="add-to-cart-btn">
+                    <i data-lucide="shopping-cart" style="width:16px;"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="wish-card">
+            <div class="remove-wish"><i data-lucide="trash-2" style="width:16px;"></i></div>
+            <div class="wish-img">
+                <img src="/images/skin.webp" alt="Skin Care">
+            </div>
+            <div class="wish-info">
+                <span class="wish-name">Running Shoes Pro - Electric Red</span>
+                <span class="wish-price">Rs. 8,900</span>
+                <button class="add-to-cart-btn">
+                    <i data-lucide="shopping-cart" style="width:16px;"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+
+        <!-- Item 4 -->
+        <div class="wish-card">
+            <div class="remove-wish"><i data-lucide="trash-2" style="width:16px;"></i></div>
+            <div class="wish-img">
+                <img src="/images/skin2.jpeg" alt="Skin Care">
+            </div>
+            <div class="wish-info">
+                <span class="wish-name">Retro Polarized Sunglasses - Gold Frame</span>
+                <span class="wish-price">Rs. 2,100</span>
+                <button class="add-to-cart-btn">
+                    <i data-lucide="shopping-cart" style="width:16px;"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+
+        <!-- Item 5 -->
+        <div class="wish-card">
+            <div class="remove-wish"><i data-lucide="trash-2" style="width:16px;"></i></div>
+            <div class="wish-img">
+                <img src="/images/watch2.jfif" alt="Watch">
+            </div>
+            <div class="wish-info">
+                <span class="wish-name">Mens Casual Sneakers - White/Navy</span>
+                <span class="wish-price">Rs. 5,600</span>
+                <button class="add-to-cart-btn">
+                    <i data-lucide="shopping-cart" style="width:16px;"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+}

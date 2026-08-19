@@ -1,0 +1,727 @@
+@model project26.Models.Product
+@{
+    ViewData["Title"] = Model.pname + " - E-World";
+    Layout = "_Layout";
+    var relatedProducts = (IEnumerable<project26.Models.Product>)ViewBag.RelatedProducts;
+    var mainImage = Model.Image?.FirstOrDefault()?.ImageUrl ?? "/images/mobile1.jfif";
+}
+
+<style>
+    :root {
+        --daraz-orange: #f85606;
+        --daraz-bg: #eff0f5;
+        --text-main: #212121;
+        --text-secondary: #757575;
+    }
+
+    body {
+        background-color: var(--daraz-bg);
+    }
+
+    .details-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumb {
+        display: flex;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+    }
+    .breadcrumb a {
+        color: #0076ad;
+        text-decoration: none;
+    }
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+
+    /* Main Product Section */
+    .product-main-card {
+        background: #fff;
+        border-radius: 4px;
+        display: flex;
+        gap: 20px;
+        padding: 16px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* Left: Images */
+    .product-gallery {
+        width: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .main-img-box {
+        width: 100%;
+        aspect-ratio: 1;
+        border: 1px solid #f2f2f2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .main-img-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s;
+    }
+    .main-img-box:hover img {
+        transform: scale(1.1);
+    }
+    .thumb-list {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+    }
+    .thumb-item {
+        width: 60px;
+        height: 60px;
+        border: 1px solid #f2f2f2;
+        cursor: pointer;
+        padding: 2px;
+    }
+    .thumb-item.active {
+        border-color: var(--daraz-orange);
+    }
+    .thumb-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Center: Info */
+    .product-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .p-title {
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--text-main);
+        line-height: 1.3;
+    }
+    .p-ratings {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+    }
+    .stars { color: #faca51; display: flex; gap: 2px; }
+    .rating-count { color: #0076ad; cursor: pointer; }
+
+    .p-brand {
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+    .p-brand span { color: #0076ad; }
+
+    .divider { height: 1px; background: #eff0f5; margin: 10px 0; }
+
+    .p-price-box {
+        padding: 10px 0;
+    }
+    .p-current-price {
+        font-size: 30px;
+        color: var(--daraz-orange);
+        font-weight: 500;
+    }
+    .p-old-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+    .p-old-price { color: var(--text-secondary); text-decoration: line-through; }
+    .p-discount-badge { color: var(--text-main); font-weight: 500; }
+
+    .p-variation {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .var-label { font-size: 14px; color: var(--text-secondary); width: 80px; }
+    .var-options { display: flex; gap: 8px; flex-wrap: wrap; }
+    .var-btn {
+        padding: 6px 12px;
+        border: 1px solid #dadada;
+        font-size: 13px;
+        cursor: pointer;
+        background: #fff;
+    }
+    .var-btn.active { border-color: var(--daraz-orange); color: var(--daraz-orange); }
+
+    .p-qty {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .qty-control {
+        display: flex;
+        align-items: center;
+        border: 1px solid #dadada;
+    }
+    .qty-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+    }
+    .qty-input {
+        width: 45px;
+        height: 32px;
+        text-align: center;
+        border: none;
+        border-left: 1px solid #dadada;
+        border-right: 1px solid #dadada;
+        font-size: 14px;
+    }
+
+    .p-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+    .btn-action {
+        flex: 1;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        border-radius: 2px;
+        transition: opacity 0.2s;
+    }
+    .btn-buy-now { background: #2abbe8; color: #fff; }
+    .btn-add-cart { background: var(--daraz-orange); color: #fff; }
+    .btn-action:hover { opacity: 0.9; }
+
+    /* Right: Delivery */
+    .product-sidebar {
+        width: 280px;
+        background: #fafafa;
+        border-left: 1px solid #eff0f5;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .side-section { display: flex; flex-direction: column; gap: 8px; }
+    .side-title { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; }
+    .side-item { display: flex; gap: 10px; font-size: 13px; color: var(--text-main); }
+    .side-icon { color: var(--text-secondary); }
+    .side-link { color: #0076ad; text-decoration: none; font-size: 12px; margin-left: auto; }
+
+    /* Bottom Sections */
+    .details-bottom {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 20px;
+    }
+    .bottom-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .bottom-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eff0f5;
+    }
+    .p-description {
+        font-size: 14px;
+        color: var(--text-main);
+        line-height: 1.6;
+    }
+
+    /* Related Products */
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+    }
+    .related-card {
+        background: #fff;
+        padding: 10px;
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid transparent;
+        transition: border 0.2s;
+    }
+    .related-card:hover { border-color: var(--daraz-orange); }
+    .related-img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 8px; }
+    .related-title { font-size: 12px; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .related-price { font-size: 14px; color: var(--daraz-orange); font-weight: 500; margin-top: 5px; }
+
+    /* Media Queries for Responsiveness */
+
+    /* Tablet and Medium Screen Devices (<= 992px) */
+    @@media (max-width: 992px) {
+        .product-main-card {
+            flex-direction: column;
+            gap: 25px;
+            padding: 16px;
+        }
+        .product-gallery {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .product-sidebar {
+            width: 100%;
+            border-left: none;
+            border-top: 1px solid #eff0f5;
+            padding: 20px 0 0 0;
+        }
+        .details-bottom {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .related-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    /* Small Tablet and Mobile Viewports (<= 768px) */
+    @@media (max-width: 768px) {
+        .related-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .p-actions {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn-action {
+            width: 100%;
+        }
+        .p-variation div[style*="display:flex"] {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px;
+        }
+        .var-label {
+            width: auto;
+            margin-bottom: 4px;
+        }
+        .p-qty {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px;
+        }
+        .qty-control {
+            margin-top: 0;
+        }
+    }
+
+    /* Small Mobile Viewports (<= 576px) */
+    @@media (max-width: 576px) {
+        .p-title {
+            font-size: 18px;
+        }
+        .p-current-price {
+            font-size: 24px;
+        }
+        .related-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .breadcrumb {
+            flex-wrap: wrap;
+            gap: 4px;
+            font-size: 11px;
+        }
+    }
+
+    /* Ultra-thin Mobile - Samsung Galaxy Z Fold 5 (<= 320px) */
+    @@media (max-width: 320px) {
+        .details-container {
+            margin: 10px auto;
+            padding: 0 8px;
+        }
+        .product-main-card {
+            padding: 12px 10px;
+            gap: 15px;
+        }
+        .p-title {
+            font-size: 16px;
+        }
+        .p-ratings {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            font-size: 11px;
+        }
+        .p-current-price {
+            font-size: 20px;
+        }
+        .thumb-item {
+            width: 48px;
+            height: 48px;
+        }
+        .qty-control {
+            width: 100%;
+            display: flex;
+        }
+        .qty-btn {
+            flex: 1;
+        }
+        .qty-input {
+            flex: 2;
+            width: auto;
+        }
+        .btn-action {
+            height: 38px;
+            font-size: 14px;
+        }
+        .related-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .related-card {
+            padding: 6px;
+        }
+        .related-title {
+            font-size: 11px;
+            height: 28px;
+        }
+        .related-price {
+            font-size: 12px;
+        }
+        .product-sidebar div[style*="justify-content:space-between"] {
+            flex-direction: column !important;
+            gap: 10px;
+            align-items: flex-start;
+        }
+    }
+
+</style>
+
+<div class="details-container">
+    <!-- Breadcrumbs -->
+    <div class="breadcrumb">
+        <a asp-controller="Home" asp-action="Index">Home</a>
+        <span>/</span>
+        <a asp-controller="Products" asp-action="Index" asp-route-category="@Model.category?.cname">@Model.category?.cname</a>
+        <span>/</span>
+        <span>@Model.pname</span>
+    </div>
+
+    <!-- Main Card -->
+    <div class="product-main-card">
+        <!-- Gallery -->
+        <div class="product-gallery">
+            <div class="main-img-box">
+                <img id="mainImage" src="@mainImage" alt="@Model.pname">
+            </div>
+            <div class="thumb-list">
+                @if (Model.Image != null && Model.Image.Any())
+                {
+                    foreach (var img in Model.Image)
+                    {
+                        <div class="thumb-item @(img.ImageUrl == mainImage ? "active" : "")" onclick="changeImage('@img.ImageUrl', this)">
+                            <img src="@img.ImageUrl" alt="Thumb">
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="thumb-item active">
+                        <img src="/images/mobile1.jfif" alt="Thumb">
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="product-info">
+            <h1 class="p-title">@Model.pname</h1>
+            
+            <div class="p-ratings">
+                <div class="stars">
+                    <i data-lucide="star" style="fill:#faca51; width:14px;"></i>
+                    <i data-lucide="star" style="fill:#faca51; width:14px;"></i>
+                    <i data-lucide="star" style="fill:#faca51; width:14px;"></i>
+                    <i data-lucide="star" style="fill:#faca51; width:14px;"></i>
+                    <i data-lucide="star" style="width:14px;"></i>
+                </div>
+                <span class="rating-count">142 Ratings</span>
+                <span style="color:#eff0f5;">|</span>
+                <span class="rating-count">56 Answered Questions</span>
+            </div>
+
+            <div class="p-brand">
+                Brand: <span>No Brand</span> | <a href="#" style="color:#0076ad; text-decoration:none;">More from E-World</a>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="p-price-box">
+                <div class="p-current-price">Rs. @(Model.pdis > 0 ? Model.pdisprice : Model.pprice)</div>
+                @if (Model.pdis > 0)
+                {
+                    <div class="p-old-box">
+                        <span class="p-old-price">Rs. @Model.pprice</span>
+                        <span class="p-discount-badge">-@Model.pdis%</span>
+                    </div>
+                }
+            </div>
+
+            <div class="divider"></div>
+
+            @if (ViewBag.Coupons != null && ((IEnumerable<project26.Models.Coupon>)ViewBag.Coupons).Any())
+            {
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #757575; margin-bottom: 10px; display: flex; align-items: center; gap: 5px;">
+                        <i data-lucide="ticket" style="width:14px; color:var(--daraz-orange);"></i>
+                        Available Coupons
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        @foreach (var coupon in (IEnumerable<project26.Models.Coupon>)ViewBag.Coupons)
+                        {
+                            <div style="border: 1px dashed var(--daraz-orange); background: #fff8f5; padding: 8px 12px; border-radius: 4px; display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 14px; font-weight: 700; color: var(--daraz-orange);">@coupon.Code</span>
+                                    <span style="font-size: 11px; color: #757575;">
+                                        @(coupon.Type == "Percentage" ? $"{coupon.DiscountValue}% OFF" : $"Rs. {coupon.DiscountValue} OFF")
+                                        @(coupon.MinimumAmount > 0 ? $" (Min Rs. {coupon.MinimumAmount})" : "")
+                                    </span>
+                                </div>
+                                <button onclick="copyCoupon('@coupon.Code', this)" style="background: var(--daraz-orange); color: #fff; border: none; padding: 4px 8px; border-radius: 2px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                                    COPY
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="divider"></div>
+            }
+
+            <!-- Variations -->
+            @if (Model.colors != null && Model.colors.Any())
+            {
+                <div class="p-variation">
+                    <div style="display:flex; align-items:center;">
+                        <span class="var-label">Color Family</span>
+                        <div class="var-options">
+                            @foreach (var c in Model.colors)
+                            {
+                                <button class="var-btn" onclick="selectVar(this)">@c.pcolor</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Size != null && Model.Size.Any())
+            {
+                <div class="p-variation" style="margin-top:15px;">
+                    <div style="display:flex; align-items:center;">
+                        <span class="var-label">Size</span>
+                        <div class="var-options">
+                            @foreach (var s in Model.Size)
+                            {
+                                <button class="var-btn" onclick="selectVar(this)">@s.psize</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="p-qty">
+                <span class="var-label">Quantity</span>
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                    <input type="text" id="qtyInput" class="qty-input" value="1" readonly>
+                    <button class="qty-btn" onclick="updateQty(1)">+</button>
+                </div>
+                <span style="font-size:12px; color:var(--text-secondary);">Only @Model.pqty items left</span>
+            </div>
+
+            <div class="p-actions">
+                <button class="btn-action btn-buy-now" onclick="buyNow(@Model.pid)">Buy Now</button>
+                <button class="btn-action btn-add-cart" onclick="addToCart(@Model.pid)">Add to Cart</button>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="product-sidebar">
+            <div class="side-section">
+                <div class="side-title">Delivery</div>
+                <div class="side-item">
+                    <i data-lucide="map-pin" class="side-icon" style="width:16px;"></i>
+                    <span>Sindh, Karachi - Gulshan-E-Iqbal - Block 15</span>
+                    <a href="#" class="side-link">CHANGE</a>
+                </div>
+                <div class="side-item">
+                    <i data-lucide="truck" class="side-icon" style="width:16px;"></i>
+                    <div style="display:flex; flex-direction:column;">
+                        <span>Standard Delivery</span>
+                        <span style="font-size:11px; color:var(--text-secondary);">2 - 4 day(s)</span>
+                    </div>
+                    <span style="margin-left:auto; font-weight:500;">Rs. 99</span>
+                </div>
+                <div class="side-item">
+                    <i data-lucide="banknote" class="side-icon" style="width:16px;"></i>
+                    <span>Cash on Delivery Available</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="side-section">
+                <div class="side-title">Service</div>
+                <div class="side-item">
+                    <i data-lucide="rotate-ccw" class="side-icon" style="width:16px;"></i>
+                    <div style="display:flex; flex-direction:column;">
+                        <span>14 days free return</span>
+                        <span style="font-size:11px; color:var(--text-secondary);">Change of mind is not applicable</span>
+                    </div>
+                </div>
+                <div class="side-item">
+                    <i data-lucide="shield-check" class="side-icon" style="width:16px;"></i>
+                    <span>Warranty not available</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="side-section">
+                <div class="side-title">Sold by</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="font-size:14px; font-weight:500;">E-World Official</div>
+                    <a href="#" class="side-link">CHAT</a>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:11px; color:var(--text-secondary);">Positive Seller Ratings</div>
+                        <div style="font-size:18px; font-weight:500;">92%</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:11px; color:var(--text-secondary);">Ship on Time</div>
+                        <div style="font-size:18px; font-weight:500;">100%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="details-bottom">
+        <div class="bottom-card">
+            <div class="bottom-title">Product details of @Model.pname</div>
+            <div class="p-description">
+                @Model.pdes
+                <br><br>
+                <ul>
+                    <li>High quality material</li>
+                    <li>Durable and long lasting</li>
+                    <li>Official brand product</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="bottom-card">
+            <div class="bottom-title">Ratings & Reviews</div>
+            <div style="text-align:center; padding:20px 0;">
+                <div style="font-size:36px; font-weight:500;">4.8<span style="font-size:18px; color:var(--text-secondary);">/5</span></div>
+                <div class="stars" style="justify-content:center; margin:10px 0;">
+                    <i data-lucide="star" style="fill:#faca51; width:20px;"></i>
+                    <i data-lucide="star" style="fill:#faca51; width:20px;"></i>
+                    <i data-lucide="star" style="fill:#faca51; width:20px;"></i>
+                    <i data-lucide="star" style="fill:#faca51; width:20px;"></i>
+                    <i data-lucide="star" style="fill:#faca51; width:20px;"></i>
+                </div>
+                <div style="font-size:13px; color:var(--text-secondary);">142 Ratings</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related -->
+    <h3 style="font-size:18px; font-weight:500; margin:30px 0 15px;">Related Products</h3>
+    <div class="related-grid">
+        @foreach (var item in relatedProducts)
+        {
+            <a asp-action="Details" asp-route-id="@item.pid" class="related-card">
+                <img src="@(item.Image?.FirstOrDefault()?.ImageUrl ?? "/images/mobile1.jfif")" class="related-img" alt="@item.pname">
+                <div class="related-title">@item.pname</div>
+                <div class="related-price">Rs. @(item.pdis > 0 ? item.pdisprice : item.pprice)</div>
+            </a>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
+        function changeImage(url, el) {
+            document.getElementById('mainImage').src = url;
+            document.querySelectorAll('.thumb-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectVar(el) {
+            el.parentElement.querySelectorAll('.var-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function updateQty(delta) {
+            const input = document.getElementById('qtyInput');
+            let val = parseInt(input.value) + delta;
+            if (val < 1) val = 1;
+            if (val > @Model.pqty) val = @Model.pqty;
+            input.value = val;
+        }
+
+        function copyCoupon(code, btn) {
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = 'COPIED!';
+                btn.style.background = '#2ecc71';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'var(--daraz-orange)';
+                }, 2000);
+            });
+        }
+
+        function buyNow(pid) {
+            const qty = document.getElementById('qtyInput').value;
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${pid}&quantity=${qty}`
+            }).then(res => {
+                if (res.redirected) { window.location.href = res.url; return; }
+                window.location.href = '/Home/Checkout?pid=' + pid;
+            }).catch(() => {
+                window.location.href = '/User/Login';
+            });
+        }
+    </script>
+}

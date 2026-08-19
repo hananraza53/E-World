@@ -1,0 +1,191 @@
+@model IEnumerable<project26.Models.WishlistItem>
+@{
+    ViewData["Title"] = "Your Wishlist";
+}
+
+<style>
+    .wishlist-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .wishlist-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .wishlist-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #212121;
+    }
+
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .wish-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        position: relative;
+    }
+    .wish-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .wish-img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        background: #f8f8f8;
+    }
+
+    .wish-info {
+        padding: 15px;
+    }
+    .wish-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #212121;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        height: 42px;
+    }
+    .wish-price {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--accent-pink);
+    }
+
+    .wish-actions {
+        display: grid;
+        grid-template-columns: 1fr 40px;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-add-cart {
+        background: var(--accent-pink);
+        color: #fff;
+        border: none;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 13px;
+        transition: background 0.2s;
+    }
+    .btn-add-cart:hover { background: #d74704; }
+
+    .btn-remove {
+        background: #f5f5f5;
+        color: #757575;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-remove:hover { background: #fee2e2; color: #ef4444; }
+
+    .empty-wishlist {
+        text-align: center;
+        padding: 80px 0;
+    }
+</style>
+
+<div class="wishlist-container">
+    <div class="wishlist-section">
+        <h3 class="wishlist-title">
+            <i data-lucide="heart" style="fill:var(--accent-pink); color:var(--accent-pink);"></i>
+            My Wishlist (@Model.Count() items)
+        </h3>
+
+        @if (!Model.Any())
+        {
+            <div class="empty-wishlist">
+                <i data-lucide="heart" style="width:80px;height:80px;color:#eee;margin-bottom:20px;"></i>
+                <h3>Your wishlist is empty!</h3>
+                <p style="color:#757575; margin-bottom:30px;">Save items you love here to find them easily later.</p>
+                <a asp-controller="Home" asp-action="Index" class="btn-add-cart" style="text-decoration:none; padding: 12px 30px;">Continue Shopping</a>
+            </div>
+        }
+        else
+        {
+            <div class="wishlist-grid">
+                @foreach (var item in Model)
+                {
+                    <div class="wish-card" id="wish-item-@item.ProductId">
+                        <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId">
+                            <img src="@(item.Product.Image?.FirstOrDefault()?.ImageUrl ?? "/images/mobile1.jfif")" class="wish-img" alt="@item.Product.pname">
+                        </a>
+                        <div class="wish-info">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" style="text-decoration:none; color:inherit;">
+                                <div class="wish-name">@item.Product.pname</div>
+                            </a>
+                            <div class="wish-price">Rs. @(item.Product.pdis > 0 ? item.Product.pdisprice : item.Product.pprice ?? 0)</div>
+                            
+                            <div class="wish-actions">
+                                <button class="btn-add-cart" onclick="addToCart(@item.ProductId)">ADD TO CART</button>
+                                <button class="btn-remove" onclick="removeWish(@item.ProductId)" title="Remove from wishlist">
+                                    <i data-lucide="trash-2" style="width:18px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function addToCart(pid) {
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${pid}`
+            }).then(res => res.json()).then(data => {
+                if(data.success) {
+                    alert('Added to cart!');
+                    location.href = '/Cart/Index';
+                }
+            });
+        }
+
+        function removeWish(pid) {
+            if(!confirm('Remove this item from wishlist?')) return;
+            fetch('/Cart/RemoveFromWishlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${pid}`
+            }).then(res => res.json()).then(data => {
+                if(data.success) {
+                    document.getElementById('wish-item-'+pid).remove();
+                    location.reload();
+                }
+            });
+        }
+    </script>
+}

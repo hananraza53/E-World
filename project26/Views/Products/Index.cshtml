@@ -1,0 +1,390 @@
+@model IEnumerable<project26.Models.Product>
+@inject project26.ApplicationDb.ApplicationDbContext _context
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Shop - E-World";
+    var categories = _context.Category.ToList();
+}
+
+<style>
+    .daraz-shop-container { max-width: 1200px; margin: 0 auto; padding: 20px 0; display: flex; gap: 20px; }
+    .shop-sidebar { width: 250px; flex-shrink: 0; background: #fff; padding: 15px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); height: fit-content; }
+    .filter-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e2e2e2; }
+    .filter-title { font-size: 14px; font-weight: 600; color: #212121; margin-bottom: 12px; }
+    .filter-list { list-style: none; padding: 0; margin: 0; }
+    .filter-list li { margin-bottom: 8px; }
+    .filter-list a { color: #757575; font-size: 13px; text-decoration: none; }
+    .filter-list a:hover { color: var(--accent-pink); }
+    .filter-list a.active { color: var(--accent-pink); font-weight: 600; }
+    .shop-main { flex: 1; }
+    .shop-header { background: #fff; padding: 15px 20px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .shop-header span { font-size: 14px; color: #757575; }
+    .daraz-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .daraz-card { background: #fff; border-radius: 4px; transition: box-shadow 0.2s; text-decoration: none; color: inherit; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 1px solid #f0f0f0; }
+    .daraz-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 2; }
+    .d-img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; overflow: hidden; position: relative; }
+    .d-img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+    .d-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+    .d-title { font-size: 13px; color: #212121; line-height: 1.4; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 8px; }
+    .d-price { font-size: 18px; font-weight: 700; color: var(--accent-pink); }
+    .d-old-price { font-size: 12px; color: #9e9e9e; text-decoration: line-through; margin-right: 5px; }
+    .d-discount { font-size: 11px; color: #212121; background: #fff0e8; padding: 1px 4px; border-radius: 2px; }
+    .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .btn-card { padding: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; border-radius: 4px; cursor: pointer; text-align: center; border: 1px solid var(--accent-pink); transition: all 0.2s; }
+    .btn-cart { background: #fff; color: var(--accent-pink); }
+    .btn-cart:hover { background: #fff8f5; }
+    .btn-buy { background: var(--accent-pink); color: #fff; }
+    .btn-buy:hover { background: #d74704; }
+
+    /* Price Filter Styles */
+    .price-input-group { display: flex; align-items: center; gap: 8px; }
+    .price-input { width: 100%; padding: 8px 10px; border: 1px solid #e2e2e2; border-radius: 4px; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    .price-input:focus { border-color: var(--accent-pink); }
+    .price-separator { color: #9e9e9e; font-size: 12px; }
+    .btn-price-apply { background: var(--accent-pink); color: #fff; border: none; width: 40px; height: 35px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .btn-price-apply:hover { background: #d74704; transform: scale(1.05); }
+    .btn-price-apply i { font-size: 12px; }
+
+    /* Sorting Styles */
+    .sort-group { display: flex; align-items: center; gap: 10px; }
+    .sort-select { padding: 6px 12px; border: 1px solid #e2e2e2; border-radius: 4px; font-size: 13px; color: #212121; outline: none; cursor: pointer; background: #fff; transition: border-color 0.2s; }
+    .sort-select:focus { border-color: var(--accent-pink); }
+
+    /* View Toggle Styles */
+    .view-toggles { display: flex; gap: 5px; margin-left: 15px; border-left: 1px solid #e2e2e2; padding-left: 15px; }
+    .btn-view { background: none; border: 1px solid #e2e2e2; color: #757575; width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .btn-view:hover { color: var(--accent-pink); border-color: var(--accent-pink); }
+    .btn-view.active { background: var(--accent-pink); color: #fff; border-color: var(--accent-pink); }
+
+    /* Modern Marketplace List View - Perfectly Aligned 220px Height */
+    .daraz-grid.list-view { grid-template-columns: 1fr; gap: 20px; }
+    .daraz-grid.list-view .daraz-card { 
+        flex-direction: row; 
+        height: 220px; 
+        background: transparent; 
+        border: none; 
+        box-shadow: none;
+        overflow: visible;
+        gap: 15px;
+        margin-bottom: 5px;
+    }
+    .daraz-grid.list-view .d-img-box { 
+        width: 220px; 
+        min-width: 220px; 
+        height: 220px; 
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .daraz-grid.list-view .d-img-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 8px;
+    }
+    .daraz-grid.list-view a { display: flex !important; flex: 1; text-decoration: none; align-items: stretch; gap: 15px; }
+    
+    .daraz-grid.list-view .d-info { 
+        background: #fff;
+        border-radius: 12px 0 0 12px;
+        box-shadow: -4px 4px 10px rgba(0,0,0,0.02);
+        flex: 1; 
+        padding: 15px 25px; 
+        border: 1px solid #f0f0f0;
+        border-right: none;
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center;
+        height: 220px;
+    }
+    
+    .daraz-grid.list-view .d-title { 
+        font-size: 19px; 
+        font-weight: 700; 
+        color: #111; 
+        margin-bottom: 6px; 
+        height: auto; 
+        -webkit-line-clamp: 2; 
+    }
+    .daraz-grid.list-view .d-description { 
+        display: block;
+        font-size: 13px; 
+        line-height: 1.5; 
+        color: #666; 
+        margin-bottom: 0; 
+        -webkit-line-clamp: 3; 
+    }
+
+    /* Modern Actions Column - Pure White Ultra Compact */
+    .daraz-grid.list-view .d-info:last-child { 
+        width: 90px; 
+        min-width: 90px;
+        height: 220px;
+        padding: 15px 5px !important; 
+        background: #fff; 
+        border-radius: 0 12px 12px 0;
+        box-shadow: 4px 4px 10px rgba(0,0,0,0.02);
+        border: 1px solid #f0f0f0;
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center;
+    }
+    .price-container { display: none; margin-bottom: 15px; text-align: center; width: 100%; }
+    .daraz-grid.list-view .price-container { display: block; }
+    .daraz-grid.list-view .d-price { font-size: 19px; font-weight: 800; color: var(--accent-pink); display: block; margin-bottom: 2px; }
+    .daraz-grid.list-view .d-old-price-row { font-size: 10px; color: #9e9e9e; }
+    
+    .daraz-grid.list-view .card-actions { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        width: 100%;
+        align-items: center;
+    }
+    .daraz-grid.list-view .btn-card { 
+        width: 75px; 
+        padding: 8px 0; 
+        font-size: 10px; 
+        border-radius: 6px; 
+        font-weight: 600;
+    }
+
+    /* Redesigned Badges */
+    .d-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .d-badge { 
+        font-size: 9px; 
+        padding: 3px 8px; 
+        border-radius: 20px; 
+        font-weight: 600; 
+        text-transform: capitalize; 
+    }
+    .badge-shipping { background: #e0f2f1; color: #00796b; }
+    .badge-service { background: #fff3e0; color: #e65100; }
+    .badge-installment { background: #f3e5f5; color: #7b1fa2; }
+
+    /* Wishlist Button Styles */
+    .btn-wishlist { 
+        position: absolute; 
+        top: 10px; 
+        right: 10px; 
+        width: 32px; 
+        height: 32px; 
+        background: #fff; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        cursor: pointer; 
+        z-index: 10; 
+        transition: all 0.2s; 
+        border: none;
+        color: #757575;
+    }
+    .btn-wishlist:hover { transform: scale(1.1); color: var(--accent-pink); }
+    .btn-wishlist.active { color: var(--accent-pink); }
+
+    /* Reset/Defaults */
+    .d-description { display: none; }
+    .d-main-content { width: 100%; }
+    .d-side-content { display: block; }
+    .daraz-grid.list-view .d-side-content { display: none; } 
+</style>
+
+<div class="daraz-shop-container">
+    <aside class="shop-sidebar">
+        <div class="filter-section">
+            <div class="filter-title">Category</div>
+            <ul class="filter-list">
+                <li><a asp-action="Index" asp-route-category="" class="@(string.IsNullOrEmpty(ViewBag.CurrentCategory) ? "active" : "")">All Products</a></li>
+                @foreach (var cat in categories)
+                {
+                    <li><a asp-action="Index" asp-route-category="@cat.cname" class="@(ViewBag.CurrentCategory == cat.cname ? "active" : "")">@cat.cname</a></li>
+                }
+            </ul>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-title">Price Range</div>
+            <div class="price-input-group">
+                <input type="number" id="minPrice" placeholder="Min" class="price-input" value="@ViewBag.MinPrice" onkeypress="handlePriceKey(event)" />
+                <span class="price-separator">-</span>
+                <input type="number" id="maxPrice" placeholder="Max" class="price-input" value="@ViewBag.MaxPrice" onkeypress="handlePriceKey(event)" />
+                <button type="button" class="btn-price-apply" onclick="applyPriceFilter()" title="Apply Price Filter">
+                    <i data-lucide="chevron-right" style="width:18px;height:18px;"></i>
+                </button>
+            </div>
+            @if (ViewBag.MinPrice != null || ViewBag.MaxPrice != null)
+            {
+                <div style="margin-top: 10px;">
+                    <a href="javascript:void(0)" onclick="clearPriceFilter()" style="font-size: 12px; color: var(--accent-pink); text-decoration: none;">Clear Filter</a>
+                </div>
+            }
+        </div>
+    </aside>
+
+    <div class="shop-main">
+        <div class="shop-header">
+            <span>@Model.Count() items found @(!string.IsNullOrEmpty(ViewBag.CurrentCategory) ? $"in {ViewBag.CurrentCategory}" : "in E-World")</span>
+            <div style="display: flex; align-items: center;">
+                <div class="sort-group">
+                    <span style="font-size: 13px; color: #757575;">Sort By:</span>
+                    <select id="sortBy" class="sort-select" onchange="applySort()">
+                        <option value="best_match" selected="@(ViewBag.SortBy == "best_match" || ViewBag.SortBy == null)">Best Match</option>
+                        <option value="price_low_high" selected="@(ViewBag.SortBy == "price_low_high")">Price: Low to High</option>
+                        <option value="price_high_low" selected="@(ViewBag.SortBy == "price_high_low")">Price: High to Low</option>
+                    </select>
+                </div>
+                <div class="view-toggles">
+                    <button class="btn-view active" id="view-grid" onclick="setView('grid')" title="Grid View">
+                        <i data-lucide="layout-grid" style="width:18px;height:18px;"></i>
+                    </button>
+                    <button class="btn-view" id="view-list" onclick="setView('list')" title="List View">
+                        <i data-lucide="list" style="width:18px;height:18px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="daraz-grid">
+            @foreach (var item in Model)
+            {
+                <div class="daraz-card">
+                    <button class="btn-wishlist" onclick="addToWishlist(@item.pid)" title="Add to Wishlist">
+                        <i data-lucide="heart" style="width:18px;height:18px;"></i>
+                    </button>
+                    <a asp-action="Details" asp-route-id="@item.pid" style="text-decoration:none; color:inherit; display:block;">
+                        <div class="d-img-box">
+                            <img src="@(item.Image?.FirstOrDefault()?.ImageUrl ?? "/images/mobile1.jfif")" alt="@item.pname">
+                        </div>
+                        <div class="d-info">
+                            <div class="d-main-content">
+                                <div class="d-title">@item.pname</div>
+                                <div class="d-description">@item.pdes</div>
+                                <div class="d-badges">
+                                    <span class="d-badge badge-shipping"><i data-lucide="truck" style="width:10px;height:10px;display:inline-block;margin-right:4px;vertical-align:middle;"></i>Free Shipping</span>
+                                    <span class="d-badge badge-service">Verified</span>
+                                    <span class="d-badge badge-installment">Instalment</span>
+                                </div>
+                            </div>
+                            <div class="d-side-content">
+                                <div class="d-price">Rs. @(item.pdis > 0 ? item.pdisprice : item.pprice)</div>
+                                @if (item.pdis > 0)
+                                {
+                                    <div style="margin-top:2px;"><span class="d-old-price">Rs. @item.pprice</span> <span class="d-discount">-@item.pdis%</span></div>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                    <div class="d-info" style="padding-top:0;">
+                        <div class="price-container">
+                            <div class="d-price">Rs. @(item.pdis > 0 ? item.pdisprice : item.pprice)</div>
+                            @if (item.pdis > 0)
+                            {
+                                <div class="d-old-price-row"><span class="d-old-price">Rs. @item.pprice</span> <span class="d-discount">-@item.pdis%</span></div>
+                            }
+                        </div>
+                        <div class="card-actions">
+                            <div class="btn-card btn-cart" onclick="addToCart(@item.pid)">Cart</div>
+                            <div class="btn-card btn-buy" onclick="buyNow(@item.pid)">Buy</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function addToWishlist(pid) {
+            fetch('/Cart/AddToWishlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'productId=' + pid
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function buyNow(pid) {
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'productId=' + pid
+            }).then(() => window.location.href = '/Home/Checkout?pid=' + pid);
+        }
+
+        function applyPriceFilter() {
+            const min = document.getElementById('minPrice').value;
+            const max = document.getElementById('maxPrice').value;
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (min) urlParams.set('minPrice', min);
+            else urlParams.delete('minPrice');
+            
+            if (max) urlParams.set('maxPrice', max);
+            else urlParams.delete('maxPrice');
+            
+            window.location.search = urlParams.toString();
+        }
+
+        function clearPriceFilter() {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.delete('minPrice');
+            urlParams.delete('maxPrice');
+            window.location.search = urlParams.toString();
+        }
+
+        function handlePriceKey(e) {
+            if (e.key === 'Enter') {
+                applyPriceFilter();
+            }
+        }
+
+        function applySort() {
+            const sortBy = document.getElementById('sortBy').value;
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (sortBy && sortBy !== 'best_match') urlParams.set('sortBy', sortBy);
+            else urlParams.delete('sortBy');
+            
+            window.location.search = urlParams.toString();
+        }
+
+        function setView(view) {
+            const grid = document.querySelector('.daraz-grid');
+            const btnGrid = document.getElementById('view-grid');
+            const btnList = document.getElementById('view-list');
+            
+            if (view === 'list') {
+                grid.classList.add('list-view');
+                btnList.classList.add('active');
+                btnGrid.classList.remove('active');
+            } else {
+                grid.classList.remove('list-view');
+                btnGrid.classList.add('active');
+                btnList.classList.remove('active');
+            }
+            localStorage.setItem('shop_view_pref', view);
+        }
+
+        // Initialize view from storage
+        document.addEventListener('DOMContentLoaded', () => {
+            const pref = localStorage.getItem('shop_view_pref');
+            if (pref === 'list') {
+                setView('list');
+            }
+        });
+    </script>
+}

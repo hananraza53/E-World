@@ -1,0 +1,397 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Categories";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-title-block">
+        <h1 class="page-title">Categories</h1>
+        <p class="page-subtitle">Manage product categories — organize your catalog effectively.</p>
+    </div>
+    <button class="btn-primary" id="btn-add-category" onclick="openCatModal('add')">
+        <i data-lucide="plus" style="width:15px;height:15px;"></i>
+        Add Category
+    </button>
+</div>
+
+<!-- Search + Sort Bar -->
+<div class="crud-toolbar">
+    <div class="header-search" style="flex:1; max-width:360px;">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" placeholder="Search categories..." class="search-input" id="cat-search" oninput="filterCategories()" />
+    </div>
+    <select class="time-select" id="cat-sort" onchange="filterCategories()">
+        <option value="az">Sort: A → Z</option>
+        <option value="za">Sort: Z → A</option>
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+    </select>
+</div>
+
+<!-- Categories Grid -->
+<div id="cat-grid" class="cat-grid">
+    <!-- Cards injected by JS -->
+</div>
+
+<!-- ── ADD / EDIT MODAL ───────────────────────────────── -->
+<div class="modal-overlay" id="cat-modal" onclick="closeCatModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:520px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="cat-modal-title">Add Category</h3>
+            <button class="modal-close" onclick="closeCatModal(null)"><i data-lucide="x"></i></button>
+        </div>
+        <form id="cat-form" onsubmit="saveCategory(event)">
+            <input type="hidden" id="cat-edit-id" value="" />
+            <div class="form-grid">
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">CName</label>
+                    <input type="text" class="form-input" id="cat-field-cname" placeholder="e.g. Skincare" required />
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">ImageUrl</label>
+                    <input type="file" id="cat-file-input" accept="image/*"
+                           style="display:none;" onchange="handleCatFile(this)" />
+                    <div class="file-upload-area" id="cat-upload-area"
+                         onclick="document.getElementById('cat-file-input').click()"
+                         ondragover="catDragOver(event)" ondragleave="catDragLeave(event)" ondrop="catDrop(event)">
+                        <div id="cat-upload-placeholder">
+                            <i data-lucide="upload-cloud" style="width:36px;height:36px;color:var(--accent-purple);margin-bottom:10px;"></i>
+                            <p style="font-size:0.85rem;font-weight:600;color:var(--text-primary);margin-bottom:4px;">
+                                Click to upload or drag & drop
+                            </p>
+                            <p style="font-size:0.73rem;color:var(--text-muted);">
+                                PNG, JPG, WEBP up to 5MB
+                            </p>
+                        </div>
+                        <div id="cat-img-preview-wrap" style="display:none;width:100%;position:relative;">
+                            <img id="cat-img-preview" src="" alt="preview"
+                                 style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;" />
+                            <button type="button" class="ban-img-remove" onclick="removeCatImg(event)"
+                                    title="Remove image">
+                                <i data-lucide="x" style="width:14px;height:14px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="cat-imageurl" value="" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" onclick="closeCatModal(null)">Cancel</button>
+                <button type="submit" class="btn-primary" id="cat-save-btn">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ───────────────────────────── -->
+<div class="modal-overlay" id="cat-delete-modal" onclick="closeCatDeleteModal(event)">
+    <div class="modal-box modal-sm" onclick="event.stopPropagation()">
+        <div class="delete-icon-wrap">
+            <i data-lucide="trash-2" style="width:32px;height:32px;color:#ec4899;"></i>
+        </div>
+        <h3 class="modal-title" style="text-align:center;margin-bottom:8px;">Delete Category?</h3>
+        <p style="text-align:center;font-size:0.83rem;color:var(--text-secondary);margin-bottom:6px;">
+            You are about to delete:
+        </p>
+        <p id="cat-del-name"
+           style="text-align:center;font-size:0.9rem;font-weight:700;color:#ec4899;margin-bottom:20px;"></p>
+        <p style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-bottom:24px;">
+            This action cannot be undone.
+        </p>
+        <input type="hidden" id="cat-delete-id" />
+        <div class="modal-footer" style="justify-content:center;">
+            <button class="btn-ghost" onclick="closeCatDeleteModal(null)">Cancel</button>
+            <button class="btn-danger" onclick="confirmCatDelete()">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── IMAGE PREVIEW MODAL ─────────────────────────────── -->
+<div class="modal-overlay" id="cat-img-modal"
+     onclick="document.getElementById('cat-img-modal').classList.remove('open')"
+     style="cursor:zoom-out;">
+    <div style="max-width:720px;width:92%;position:relative;" onclick="event.stopPropagation()">
+        <button onclick="document.getElementById('cat-img-modal').classList.remove('open')"
+                style="position:absolute;top:-14px;right:-14px;background:#252831;border:1px solid rgba(255,255,255,0.12);
+                       color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;
+                       display:flex;align-items:center;justify-content:center;z-index:10;">&times;</button>
+        <img id="cat-preview-img-src" src="" alt=""
+             style="width:100%;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.6);" />
+        <p id="cat-preview-img-title"
+           style="text-align:center;margin-top:12px;font-weight:600;color:#fff;font-size:0.9rem;"></p>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let categories = [];
+
+    // ── Fetch Categories from API ───────────────────────────
+    async function loadCategories() {
+        try {
+            const response = await fetch('/Categories/GetCategories');
+            if (response.ok) {
+                categories = await response.json();
+                renderCategories(categories);
+            } else {
+                showToast('Failed to load categories.', 'error');
+            }
+        } catch (error) {
+            showToast('Error loading categories.', 'error');
+        }
+    }
+
+    // ── Render Cards ─────────────────────────────────────
+    function renderCategories(data) {
+        const grid = document.getElementById('cat-grid');
+        if (!data.length) {
+            grid.innerHTML = `<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:50px;font-size:0.9rem;">No categories found.</p>`;
+            updateCatStats();
+            return;
+        }
+        grid.innerHTML = data.map(c => `
+            <div class="cat-card" data-cname="${c.cname.toLowerCase()}">
+                ${c.imageurl || c.Imageurl
+                    ? `<div class="cat-card-img-wrap">
+                           <img src="${c.imageurl || c.Imageurl}" alt="${c.cname}" class="cat-card-img"
+                                onclick="openCatImgPreview('${c.imageurl || c.Imageurl}','${c.cname.replace(/'/g,"\\\'")}')"/>
+                           <div class="cat-img-overlay"></div>
+                       </div>`
+                    : `<div class="cat-card-no-img">
+                           <i data-lucide="image-off" style="width:32px;height:32px;"></i>
+                           <span>No Image</span>
+                       </div>`
+                }
+                <div class="cat-card-body">
+                    <span class="cat-cid-badge">CID #${c.cid}</span>
+                    <h4 class="cat-name">${c.cname}</h4>
+                </div>
+                <div class="cat-actions">
+                    <button class="action-btn action-edit" onclick="openCatModal('edit', ${c.cid})" title="Edit">
+                        <i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit
+                    </button>
+                    <button class="action-btn action-delete" onclick="openCatDeleteModal(${c.cid}, '${c.cname.replace(/'/g,"\\'")}')">
+                        <i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+        updateCatStats();
+    }
+
+    function updateCatStats() {
+        // Optional stats updating logic if you have stat counters
+        // document.getElementById('stat-cat-total').textContent = categories.length;
+    }
+
+    // ── Filter + Sort ────────────────────────────────────
+    function filterCategories() {
+        const q    = document.getElementById('cat-search').value.toLowerCase();
+        const sort = document.getElementById('cat-sort').value;
+        let filtered = categories.filter(c =>
+            !q || c.cname.toLowerCase().includes(q)
+        );
+        if (sort === 'az')      filtered.sort((a, b) => a.cname.localeCompare(b.cname));
+        if (sort === 'za')      filtered.sort((a, b) => b.cname.localeCompare(a.cname));
+        if (sort === 'newest')  filtered.sort((a, b) => b.cid - a.cid);
+        if (sort === 'oldest')  filtered.sort((a, b) => a.cid - b.cid);
+        renderCategories(filtered);
+    }
+
+    // ── Add / Edit Modal ─────────────────────────────────
+    function openCatModal(mode, cid) {
+        document.getElementById('cat-modal').classList.add('open');
+        resetCatUploadArea();
+        if (mode === 'add') {
+            document.getElementById('cat-modal-title').textContent = 'Add Category';
+            document.getElementById('cat-save-btn').innerHTML      = '<i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Save Category';
+            document.getElementById('cat-form').reset();
+            document.getElementById('cat-edit-id').value  = '0';
+            document.getElementById('cat-imageurl').value = '';
+        } else {
+            const c = categories.find(x => x.cid === cid);
+            document.getElementById('cat-modal-title').textContent = 'Edit Category';
+            document.getElementById('cat-save-btn').innerHTML      = '<i data-lucide="save" style="width:14px;height:14px;"></i> Update Category';
+            document.getElementById('cat-edit-id').value       = c.cid;
+            document.getElementById('cat-field-cname').value   = c.cname;
+            document.getElementById('cat-imageurl').value      = c.imageurl || c.Imageurl || '';
+            if (c.imageurl || c.Imageurl) showCatPreview(c.imageurl || c.Imageurl);
+        }
+        lucide.createIcons();
+    }
+
+    function closeCatModal(e) {
+        if (!e || e.target === document.getElementById('cat-modal'))
+            document.getElementById('cat-modal').classList.remove('open');
+    }
+
+    // ── File Upload Handlers ─────────────────────────────
+    function handleCatFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showToast('Please select an image file!', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image must be under 5MB!', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // keep cat-imageurl empty to distinguish new upload vs old URL
+            document.getElementById('cat-imageurl').value = '';
+            showCatPreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function catDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('cat-upload-area').classList.add('drag-over');
+    }
+
+    function catDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('cat-upload-area').classList.remove('drag-over');
+    }
+
+    function catDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('cat-upload-area').classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const input = document.getElementById('cat-file-input');
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            handleCatFile(input);
+        }
+    }
+
+    function showCatPreview(src) {
+        document.getElementById('cat-upload-placeholder').style.display = 'none';
+        const wrap = document.getElementById('cat-img-preview-wrap');
+        const img  = document.getElementById('cat-img-preview');
+        img.src = src;
+        wrap.style.display = 'block';
+        lucide.createIcons();
+    }
+
+    function resetCatUploadArea() {
+        document.getElementById('cat-upload-placeholder').style.display = '';
+        document.getElementById('cat-img-preview-wrap').style.display   = 'none';
+        document.getElementById('cat-img-preview').src                  = '';
+        document.getElementById('cat-file-input').value                 = '';
+        document.getElementById('cat-upload-area').classList.remove('drag-over');
+    }
+
+    function removeCatImg(e) {
+        e.stopPropagation();
+        document.getElementById('cat-imageurl').value = '';
+        document.getElementById('cat-file-input').value = '';
+        resetCatUploadArea();
+    }
+
+    // ── Save ─────────────────────────────────────────────
+    async function saveCategory(e) {
+        e.preventDefault();
+        const btn = document.getElementById('cat-save-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader" class="spin" style="width:14px;height:14px;"></i> Saving...';
+        lucide.createIcons();
+
+        const formData = new FormData();
+        formData.append("cid", document.getElementById('cat-edit-id').value);
+        formData.append("cname", document.getElementById('cat-field-cname').value.trim());
+        
+        // Append image if we are not editing or replacing the image
+        const fileInput = document.getElementById('cat-file-input');
+        if (fileInput.files.length > 0) {
+            formData.append("image", fileInput.files[0]);
+        } else {
+            // Keep existing URL if editing and not changed
+            formData.append("Imageurl", document.getElementById('cat-imageurl').value);
+        }
+
+        try {
+            const response = await fetch('/Categories/Save', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (result.success) {
+                closeCatModal(null);
+                await loadCategories();
+                showToast(document.getElementById('cat-edit-id').value === '0' ? 'Category added!' : 'Category updated!');
+            } else {
+                showToast(result.message || 'Error saving category.', 'error');
+            }
+        } catch (error) {
+            showToast('Network error.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px;"></i> Save Category';
+            lucide.createIcons();
+        }
+    }
+
+    // ── Delete Modal ─────────────────────────────────────
+    function openCatDeleteModal(cid, name) {
+        document.getElementById('cat-delete-id').value      = cid;
+        document.getElementById('cat-del-name').textContent  = name;
+        document.getElementById('cat-delete-modal').classList.add('open');
+        lucide.createIcons();
+    }
+
+    function closeCatDeleteModal(e) {
+        if (!e || e.target === document.getElementById('cat-delete-modal'))
+            document.getElementById('cat-delete-modal').classList.remove('open');
+    }
+
+    async function confirmCatDelete() {
+        const cid = parseInt(document.getElementById('cat-delete-id').value);
+        try {
+            const response = await fetch(`/Categories/Delete/${cid}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                closeCatDeleteModal(null);
+                await loadCategories();
+                showToast('Category deleted!', 'error');
+            } else {
+                showToast(result.message || 'Error deleting category.', 'error');
+            }
+        } catch (error) {
+            showToast('Network error.', 'error');
+        }
+    }
+
+    // ── Image Preview ────────────────────────────────────
+    function openCatImgPreview(url, title) {
+        document.getElementById('cat-preview-img-src').src           = url;
+        document.getElementById('cat-preview-img-title').textContent = title;
+        document.getElementById('cat-img-modal').classList.add('open');
+    }
+
+    // ── Toast ─────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const t = document.createElement('div');
+        t.className = 'toast-msg ' + type;
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.classList.add('show'), 10);
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 2600);
+    }
+
+    // ── Init ─────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCategories();
+        lucide.createIcons();
+    });
+</script>
+}

@@ -1,0 +1,279 @@
+@model List<project26.Models.User>
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Users";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-title-block">
+        <h1 class="page-title">Users</h1>
+        <p class="page-subtitle">Manage all registered users — create or remove accounts.</p>
+    </div>
+    <button class="btn-primary" onclick="document.getElementById('create-modal').classList.add('open'); lucide.createIcons();">
+        <i data-lucide="user-plus" style="width:15px;height:15px;"></i>
+        Add User
+    </button>
+</div>
+
+<!-- TempData Alerts -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert-success">
+        <i data-lucide="check-circle" style="width:16px;height:16px;"></i>
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-error">
+        <i data-lucide="alert-circle" style="width:16px;height:16px;"></i>
+        @TempData["Error"]
+    </div>
+}
+
+<!-- Stats Strip -->
+<div class="crud-stat-strip">
+    <div class="crud-stat">
+        <span class="crud-stat-val">@Model.Count</span>
+        <span class="crud-stat-label">Total</span>
+    </div>
+    <div class="crud-stat">
+        <span class="crud-stat-val" style="color:#10b981;">@Model.Count(u => u.verifystatus == true)</span>
+        <span class="crud-stat-label">Verified</span>
+    </div>
+    <div class="crud-stat">
+        <span class="crud-stat-val" style="color:#f59e0b;">@Model.Count(u => u.verifystatus != true)</span>
+        <span class="crud-stat-label">Unverified</span>
+    </div>
+    <div class="crud-stat">
+        <span class="crud-stat-val" style="color:#ec4899;">@Model.Count(u => u.urole == "Admin")</span>
+        <span class="crud-stat-label">Admins</span>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="crud-toolbar">
+    <div class="header-search" style="flex:1; max-width:360px;">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" placeholder="Search users..." class="search-input" id="user-search" oninput="filterUsers()" />
+    </div>
+    <select class="time-select" id="filter-role" onchange="filterUsers()">
+        <option value="">All Roles</option>
+        <option value="Admin">Admin</option>
+        <option value="user">User</option>
+    </select>
+    <select class="time-select" id="filter-verify" onchange="filterUsers()">
+        <option value="">All Status</option>
+        <option value="verified">Verified</option>
+        <option value="unverified">Unverified</option>
+    </select>
+</div>
+
+<!-- Users Table -->
+<div class="panel" style="padding:0; overflow:hidden;">
+    <div class="table-wrap">
+        <table class="orders-table" id="users-table">
+            <thead>
+                <tr>
+                    <th>#ID</th>
+                    <th>USER</th>
+                    <th>EMAIL</th>
+                    <th>PHONE</th>
+                    <th>ROLE</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody id="users-tbody">
+                @foreach (var user in Model)
+                {
+                    <tr data-name="@user.uname.ToLower()"
+                        data-email="@user.uemail.ToLower()"
+                        data-role="@user.urole"
+                        data-verified="@(user.verifystatus == true ? "verified" : "unverified")">
+                        <td class="order-id">#@user.uid</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div class="user-table-avatar">
+                                    @(user.uname.Length > 0 ? user.uname[0].ToString().ToUpper() : "?")
+                                </div>
+                                <div>
+                                    <div style="font-weight:600;color:#fff;font-size:0.85rem;">@user.uname</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@user.uemail</td>
+                        <td>@user.uphone</td>
+                        <td>
+                            @if (user.urole == "Admin")
+                            {
+                                <span class="badge" style="background:rgba(139,92,246,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);">Admin</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.2);">User</span>
+                            }
+                        </td>
+                        <td>
+                            @if (user.verifystatus == true)
+                            {
+                                <span class="badge badge-completed">Verified</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-pending">Unverified</span>
+                            }
+                        </td>
+                        <td>
+                            <button class="action-btn action-delete"
+                                    onclick="openDeleteModal(@user.uid, '@user.uname')"
+                                    title="Delete">
+                                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!Model.Any())
+        {
+            <div style="text-align:center;padding:48px;color:var(--text-muted);">
+                <i data-lucide="users" style="width:36px;height:36px;opacity:0.3;"></i>
+                <p style="margin-top:12px;">No users found.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- ── CREATE USER MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="create-modal" onclick="closeCreateModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title">Add New User</h3>
+            <button class="modal-close" onclick="closeCreateModal(null)">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <form method="post" asp-action="Create" asp-controller="Users">
+            @Html.AntiForgeryToken()
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" name="uname" placeholder="e.g. John Doe" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-input" name="uphone" placeholder="e.g. 03001234567" required />
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" name="uemail" placeholder="e.g. user@email.com" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" name="upassword" placeholder="Min 6 characters" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select class="form-input" name="urole">
+                        <option value="user">User</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" onclick="closeCreateModal(null)">Cancel</button>
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="user-plus" style="width:14px;height:14px;"></i>
+                    Create User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ───────────────────────────── -->
+<div class="modal-overlay" id="delete-user-modal" onclick="closeDeleteModal(event)">
+    <div class="modal-box modal-sm" onclick="event.stopPropagation()">
+        <div class="delete-icon-wrap">
+            <i data-lucide="user-x" style="width:30px;height:30px;color:#ec4899;"></i>
+        </div>
+        <h3 class="modal-title" style="text-align:center;margin-bottom:8px;">Delete User?</h3>
+        <p style="text-align:center;font-size:0.83rem;color:var(--text-secondary);margin-bottom:6px;">
+            You are about to delete:
+        </p>
+        <p style="text-align:center;font-size:0.9rem;font-weight:700;color:#ec4899;margin-bottom:20px;" id="delete-user-name"></p>
+        <p style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-bottom:24px;">
+            This action cannot be undone.
+        </p>
+        <form method="post" id="delete-form" asp-controller="Users" asp-action="Delete">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="delete-user-id" />
+            <div class="modal-footer" style="justify-content:center;">
+                <button type="button" class="btn-ghost" onclick="closeDeleteModal(null)">Cancel</button>
+                <button type="submit" class="btn-danger">
+                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                    Yes, Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // ── Search & Filter ──────────────────────────────────
+    function filterUsers() {
+        const q       = document.getElementById('user-search').value.toLowerCase();
+        const role    = document.getElementById('filter-role').value.toLowerCase();
+        const verify  = document.getElementById('filter-verify').value.toLowerCase();
+        const rows    = document.querySelectorAll('#users-tbody tr');
+
+        rows.forEach(row => {
+            const name     = row.dataset.name    || '';
+            const email    = row.dataset.email   || '';
+            const rowRole  = row.dataset.role    || '';
+            const verified = row.dataset.verified|| '';
+
+            const matchQ      = !q      || name.includes(q) || email.includes(q);
+            const matchRole   = !role   || rowRole.toLowerCase() === role;
+            const matchVerify = !verify || verified === verify;
+
+            row.style.display = (matchQ && matchRole && matchVerify) ? '' : 'none';
+        });
+    }
+
+    // ── Modals ───────────────────────────────────────────
+    function closeCreateModal(e) {
+        if (!e || e.target === document.getElementById('create-modal'))
+            document.getElementById('create-modal').classList.remove('open');
+    }
+
+    function openDeleteModal(id, name) {
+        document.getElementById('delete-user-id').value  = id;
+        document.getElementById('delete-user-name').textContent = name;
+        document.getElementById('delete-user-modal').classList.add('open');
+        lucide.createIcons();
+    }
+
+    function closeDeleteModal(e) {
+        if (!e || e.target === document.getElementById('delete-user-modal'))
+            document.getElementById('delete-user-modal').classList.remove('open');
+    }
+
+    // ── Auto-dismiss alerts ──────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+        const alerts = document.querySelectorAll('.alert-success, .alert-error');
+        alerts.forEach(a => {
+            setTimeout(() => {
+                a.style.opacity = '0';
+                setTimeout(() => a.remove(), 400);
+            }, 3500);
+        });
+    });
+</script>
+}

@@ -1,0 +1,232 @@
+@model IEnumerable<project26.Models.CartItem>
+@{
+    ViewData["Title"] = "Your Shopping Cart";
+    decimal subtotal = Model.Sum(i => (i.Product.pdis > 0 ? i.Product.pdisprice : i.Product.pprice ?? 0) * i.Quantity);
+}
+
+<style>
+    .cart-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 30px;
+        padding: 0 20px;
+    }
+
+    .cart-section {
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .cart-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #212121;
+    }
+
+    .cart-item {
+        display: grid;
+        grid-template-columns: 100px 1fr 150px 100px;
+        gap: 20px;
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+    }
+    .cart-item:last-child { border-bottom: none; }
+
+    .item-img {
+        width: 100px;
+        height: 100px;
+        border-radius: 4px;
+        object-fit: cover;
+        background: #f8f8f8;
+    }
+
+    .item-info h4 {
+        font-size: 16px;
+        margin: 0 0 5px 0;
+        color: #212121;
+    }
+    .item-info p {
+        font-size: 13px;
+        color: #757575;
+        margin: 0;
+    }
+
+    .qty-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #e2e2e2;
+        border-radius: 4px;
+        padding: 5px;
+        width: fit-content;
+    }
+    .qty-btn {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background: #f5f5f5;
+        border-radius: 2px;
+        border: none;
+    }
+    .qty-btn:hover { background: #e0e0e0; }
+
+    .item-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--accent-pink);
+        text-align: right;
+    }
+
+    .summary-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    .summary-total {
+        border-top: 1px solid #f0f0f0;
+        padding-top: 15px;
+        margin-top: 15px;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .checkout-btn {
+        width: 100%;
+        background: var(--accent-pink);
+        color: #fff;
+        border: none;
+        padding: 15px;
+        border-radius: 4px;
+        font-weight: 700;
+        margin-top: 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .checkout-btn:hover { background: #d74704; }
+
+    .empty-cart {
+        text-align: center;
+        padding: 60px 0;
+    }
+    .empty-cart i {
+        color: #e0e0e0;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="cart-container">
+    <div class="cart-left">
+        <div class="cart-section">
+            <h3 class="cart-title">
+                <i data-lucide="shopping-cart"></i>
+                Shopping Cart (@Model.Sum(i => i.Quantity) items)
+            </h3>
+
+            @if (!Model.Any())
+            {
+                <div class="empty-cart">
+                    <i data-lucide="shopping-bag" style="width:80px;height:80px;"></i>
+                    <h3>Your cart is empty!</h3>
+                    <p>Looks like you haven't added anything to your cart yet.</p>
+                    <a asp-controller="Home" asp-action="Index" class="checkout-btn" style="display:inline-block; width:auto; padding: 12px 30px; text-decoration:none;">Shop Now</a>
+                </div>
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    var price = item.Product.pdis > 0 ? item.Product.pdisprice : (item.Product.pprice ?? 0);
+                    <div class="cart-item">
+                        <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId">
+                            <img src="@(item.Product.Image?.FirstOrDefault()?.ImageUrl ?? "/images/mobile1.jfif")" class="item-img" alt="@item.Product.pname">
+                        </a>
+                        <div class="item-info">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" style="text-decoration:none; color:inherit;">
+                                <h4>@item.Product.pname</h4>
+                            </a>
+                            <p>Category: @item.Product.category?.cname</p>
+                        </div>
+                        <div class="qty-control">
+                            <button class="qty-btn" onclick="updateQty(@item.ProductId, -1)">-</button>
+                            <span>@item.Quantity</span>
+                            <button class="qty-btn" onclick="updateQty(@item.ProductId, 1)">+</button>
+                        </div>
+                        <div class="item-price">
+                            <div>Rs. @(price * item.Quantity)</div>
+                            <button class="qty-btn" style="color:#ef4444; width:auto; padding:0 10px; margin-top:5px; font-size:11px;" onclick="removeFromCart(@item.ProductId)">Remove</button>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        @* Wishlist Section can go here or be a separate page *@
+    </div>
+
+    <div class="cart-right">
+        <div class="summary-card">
+            <h4 style="margin-bottom:20px; font-weight:700;">Order Summary</h4>
+            <div class="summary-row">
+                <span>Subtotal (@Model.Sum(i => i.Quantity) items)</span>
+                <span>Rs. @subtotal</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping Fee</span>
+                <span>Rs. 200</span>
+            </div>
+            <div class="summary-row" style="color:#2ecc71;">
+                <span>Shipping Fee Discount</span>
+                <span>-Rs. 200</span>
+            </div>
+            <div class="summary-total">
+                <span>Total</span>
+                <span style="color:var(--accent-pink);">Rs. @subtotal</span>
+            </div>
+            <button class="checkout-btn" onclick="location.href='/Home/Checkout'">PROCEED TO CHECKOUT</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateQty(pid, delta) {
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${pid}&quantity=${delta}`
+            }).then(() => location.reload());
+        }
+
+        function removeFromCart(pid) {
+            if(!confirm('Remove this item from cart?')) return;
+            fetch('/Cart/RemoveFromCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${pid}`
+            }).then(() => location.reload());
+        }
+    </script>
+}
